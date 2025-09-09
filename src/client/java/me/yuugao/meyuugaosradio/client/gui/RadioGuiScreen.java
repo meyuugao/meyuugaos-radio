@@ -1,6 +1,6 @@
 package me.yuugao.meyuugaosradio.client.gui;
 
-import static me.yuugao.meyuugaosradio.Constants.*;
+import static me.yuugao.meyuugaosradio.Constants.RADIO_VOLUME_MULTIPLIER;
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
 

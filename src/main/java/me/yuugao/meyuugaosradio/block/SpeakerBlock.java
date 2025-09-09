@@ -1,6 +1,7 @@
 package me.yuugao.meyuugaosradio.block;
 
-import static me.yuugao.meyuugaosradio.Constants.*;
+import static me.yuugao.meyuugaosradio.Constants.SPEAKER_MAX_RANGE;
+import static me.yuugao.meyuugaosradio.Constants.SPEAKER_VOLUME_MULTIPLIER;
 
 
 import me.yuugao.meyuugaosradio.Radio;

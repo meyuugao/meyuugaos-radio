@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "MeYuugaos radio",
   "description": "A project inspired by Dragon's Radio mod and made for the new versions of Minecraft.\nThis mod can play HLS AAC audio streams (.m3u8).",
-  "authors": ["MeYuugao"],
+  "authors": [
+    "MeYuugao"
+  ],
   "contact": {
     "homepage": "https://modrinth.com/project/meyuugaos-radio",
     "email": "https://meyuugao@gmail.com",

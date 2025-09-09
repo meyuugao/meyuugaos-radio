@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.block.BlockState;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class ServerEventsManager {

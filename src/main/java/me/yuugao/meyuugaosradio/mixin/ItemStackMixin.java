@@ -1,6 +1,7 @@
 package me.yuugao.meyuugaosradio.mixin;
 
-import static me.yuugao.meyuugaosradio.Constants.*;
+import static me.yuugao.meyuugaosradio.Constants.MEYUUGAOSRADIO_REMOTE_CONTROLLER_ID;
+import static me.yuugao.meyuugaosradio.Constants.TECHREBORN_WRENCH_ID;
 
 
 import me.yuugao.meyuugaosradio.Radio;

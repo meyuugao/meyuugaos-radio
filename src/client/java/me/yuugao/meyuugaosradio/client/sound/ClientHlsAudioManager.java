@@ -5,14 +5,17 @@ import me.yuugao.meyuugaosradio.client.config.ClientModConfigManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 
-import javax.sound.sampled.*;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();

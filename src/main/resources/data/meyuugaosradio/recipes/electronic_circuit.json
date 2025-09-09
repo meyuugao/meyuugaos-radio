@@ -6,9 +6,18 @@
     "ICI"
   ],
   "key": {
-    "C": {"item": "minecraft:copper_ingot"},
-    "I": {"item": "minecraft:iron_ingot"},
-    "R": {"item": "minecraft:redstone"}
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
   },
-  "result": {"item": "meyuugaosradio:electronic_circuit", "count": 1}
+  "result": {
+    "item": "meyuugaosradio:electronic_circuit",
+    "count": 1
+  }
 }

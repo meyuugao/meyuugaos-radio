@@ -6,9 +6,18 @@
     "ICI"
   ],
   "key": {
-    "C": {"item": "minecraft:copper_block"},
-    "I": {"item": "minecraft:iron_block"},
-    "R": {"item": "minecraft:redstone_block"}
+    "C": {
+      "item": "minecraft:copper_block"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
   },
-  "result": {"item": "meyuugaosradio:battery", "count": 1}
+  "result": {
+    "item": "meyuugaosradio:battery",
+    "count": 1
+  }
 }

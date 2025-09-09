@@ -1,7 +1,5 @@
 package me.yuugao.meyuugaosradio.client.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -11,6 +9,8 @@ import org.joml.Matrix4f;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class BlockGlowRenderer {
     private static final Map<BlockPos, GlowInfo> blocksToRender = new HashMap<>();

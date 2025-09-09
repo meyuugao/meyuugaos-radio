@@ -1,6 +1,5 @@
 package me.yuugao.meyuugaosradio.item;
 
-import me.yuugao.meyuugaosradio.Radio;
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 
@@ -98,7 +97,7 @@ public class RemoteControllerItem extends Item {
                 BlockPos pos = hit.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
-                if (state.getBlock() instanceof AbstractEnergyBlock abstractEnergyBlock ) {
+                if (state.getBlock() instanceof AbstractEnergyBlock abstractEnergyBlock) {
                     interactionHandler.handle(abstractEnergyBlock, world, pos, serverPlayerEntity);
                     return;
                 }

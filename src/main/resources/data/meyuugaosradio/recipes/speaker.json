@@ -6,11 +6,24 @@
     "III"
   ],
   "key": {
-    "A": {"item": "meyuugaosradio:antenna"},
-    "B": {"item": "meyuugaosradio:battery"},
-    "E": {"item": "meyuugaosradio:electronic_circuit"},
-    "I": {"item": "minecraft:iron_block"},
-    "M": {"item": "meyuugaosradio:membrane"}
+    "A": {
+      "item": "meyuugaosradio:antenna"
+    },
+    "B": {
+      "item": "meyuugaosradio:battery"
+    },
+    "E": {
+      "item": "meyuugaosradio:electronic_circuit"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "M": {
+      "item": "meyuugaosradio:membrane"
+    }
   },
-  "result": {"item": "meyuugaosradio:speaker", "count": 1}
+  "result": {
+    "item": "meyuugaosradio:speaker",
+    "count": 1
+  }
 }

@@ -6,9 +6,18 @@
     " I "
   ],
   "key": {
-    "I": {"item": "minecraft:iron_ingot"},
-    "R": {"item": "minecraft:redstone"},
-    "S": {"item": "meyuugaosradio:small_battery"}
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "meyuugaosradio:small_battery"
+    }
   },
-  "result": {"item": "meyuugaosradio:remote_controller", "count": 1}
+  "result": {
+    "item": "meyuugaosradio:remote_controller",
+    "count": 1
+  }
 }
