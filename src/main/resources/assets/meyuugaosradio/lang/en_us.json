@@ -1,0 +1,23 @@
+{
+  "block.meyuugaosradio.radio": "Radio",
+  "block.meyuugaosradio.speaker": "Speaker",
+  "item.meyuugaosradio.radio": "Radio",
+  "item.meyuugaosradio.speaker": "Speaker",
+  "item.meyuugaosradio.remote_controller": "Remote controller",
+  "item.meyuugaosradio.electronic_circuit": "Electronic circuit",
+  "item.meyuugaosradio.battery": "Battery",
+  "item.meyuugaosradio.small_battery": "Small battery",
+  "item.meyuugaosradio.antenna": "Antenna",
+  "item.meyuugaosradio.small_membrane": "Small membrane",
+  "item.meyuugaosradio.membrane": "Membrane",
+  "tooltip.energy": "Energy:",
+  "tooltip.usage": "Usage:",
+  "tooltip.usage.ticksuffix": "Tick",
+  "tooltip.usage.usesuffix": "Use",
+  "error.alreadyconnected": "This speaker is already connected to another radio!",
+  "error.toofar": "This speaker is too far away from the radio!",
+  "error.notenoughenergy": "Not enough energy to do this!",
+  "text.autoconfig.meyuugaosradio_client.title": "MeYuugao's Radio settings",
+  "text.autoconfig.meyuugaosradio_client.option.volume": "Volume",
+  "gamerule.meyuugaosradioConnectRadius": "Maximum radio connection radius"
+}

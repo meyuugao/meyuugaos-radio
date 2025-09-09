@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WLW",
+    "LSL",
+    "WLW"
+  ],
+  "key": {
+    "L": {"item": "minecraft:leather"},
+    "S": {"item": "minecraft:string"},
+    "W": {"item": "minecraft:black_wool"}
+  },
+  "result": {"item": "meyuugaosradio:membrane", "count": 1}
+}
