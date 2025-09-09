@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "meyuugaosradio",
+  "version": "${version}",
+  "name": "MeYuugaos-radio-mod",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "unlicense",
+  "icon": "assets/meyuugaosradio/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.yuugao.meyuugaosradio.client.RadioClient"
+    ],
+    "main": [
+      "me.yuugao.meyuugaosradio.Radio"
+    ]
+  },
+  "mixins": [
+    "meyuugaosradio.mixins.json",
+    {
+      "config": "meyuugaosradio.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
