@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: remapped.com.terraformersmc:modmenu-ceaf4ab3:7.0.1" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="remapped.com.terraformersmc" artifactId="modmenu-ceaf4ab3" version="7.0.1" baseVersion="7.0.1" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/remapped/com/terraformersmc/modmenu-ceaf4ab3/7.0.1/modmenu-ceaf4ab3-7.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

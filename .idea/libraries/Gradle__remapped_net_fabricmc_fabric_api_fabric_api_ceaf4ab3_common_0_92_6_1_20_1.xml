@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: remapped.net.fabricmc.fabric-api:fabric-api-ceaf4ab3-common:0.92.6+1.20.1" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="remapped.net.fabricmc.fabric-api" artifactId="fabric-api-ceaf4ab3-common" version="0.92.6+1.20.1" baseVersion="0.92.6+1.20.1" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/remapped/net/fabricmc/fabric-api/fabric-api-ceaf4ab3-common/0.92.6+1.20.1/fabric-api-ceaf4ab3-common-0.92.6+1.20.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

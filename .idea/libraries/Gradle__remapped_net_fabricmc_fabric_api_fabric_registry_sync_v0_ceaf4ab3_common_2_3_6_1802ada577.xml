@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: remapped.net.fabricmc.fabric-api:fabric-registry-sync-v0-ceaf4ab3-common:2.3.6+1802ada577" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="remapped.net.fabricmc.fabric-api" artifactId="fabric-registry-sync-v0-ceaf4ab3-common" version="2.3.6+1802ada577" baseVersion="2.3.6+1802ada577" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/remapped/net/fabricmc/fabric-api/fabric-registry-sync-v0-ceaf4ab3-common/2.3.6+1802ada577/fabric-registry-sync-v0-ceaf4ab3-common-2.3.6+1802ada577.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

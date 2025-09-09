@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: remapped.net.fabricmc.fabric-api:fabric-entity-events-v1-ceaf4ab3-client:1.6.1+1c78457f77" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="remapped.net.fabricmc.fabric-api" artifactId="fabric-entity-events-v1-ceaf4ab3-client" version="1.6.1+1c78457f77" baseVersion="1.6.1+1c78457f77" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/remapped/net/fabricmc/fabric-api/fabric-entity-events-v1-ceaf4ab3-client/1.6.1+1c78457f77/fabric-entity-events-v1-ceaf4ab3-client-1.6.1+1c78457f77.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

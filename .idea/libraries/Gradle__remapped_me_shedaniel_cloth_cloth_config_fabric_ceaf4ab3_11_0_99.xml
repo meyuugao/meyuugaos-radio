@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: remapped.me.shedaniel.cloth:cloth-config-fabric-ceaf4ab3:11.0.99" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="remapped.me.shedaniel.cloth" artifactId="cloth-config-fabric-ceaf4ab3" version="11.0.99" baseVersion="11.0.99" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/.gradle/loom-cache/remapped_mods/remapped/me/shedaniel/cloth/cloth-config-fabric-ceaf4ab3/11.0.99/cloth-config-fabric-ceaf4ab3-11.0.99.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
