@@ -4,6 +4,7 @@
   "package": "me.yuugao.meyuugaosradio.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ItemStackMixin"
   ],
   "injectors": {
     "defaultRequire": 1
