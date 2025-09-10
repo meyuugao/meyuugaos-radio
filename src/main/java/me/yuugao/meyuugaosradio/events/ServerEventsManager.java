@@ -3,6 +3,7 @@ package me.yuugao.meyuugaosradio.events;
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
+import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
@@ -11,6 +12,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 
 public class ServerEventsManager {
     private static boolean shouldUnload = false;
@@ -33,11 +36,28 @@ public class ServerEventsManager {
                     BlockState state = abstractEnergyBlockEntity.getCachedState();
                     if (state.get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED)) {
                         long currentEnergy = abstractEnergyBlockEntity.getAmount();
+                        float currentVolume = abstractEnergyBlockEntity.getVolume();
+                        String currentStreamUrl = null;
+                        List<BlockPos> currentSpeakers = null;
+                        if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
+                            currentStreamUrl = radioBlockEntity.getStreamUrl();
+                            currentSpeakers = radioBlockEntity.getSpeakers();
+                        }
                         BlockPos pos = abstractEnergyBlockEntity.getPos();
                         serverWorld.removeBlockEntity(pos);
                         ((AbstractEnergyBlock) state.getBlock()).onDisabled(serverWorld, pos, state);
-                        if (serverWorld.getBlockEntity(pos) instanceof AbstractEnergyBlockEntity newEntity) {
-                            newEntity.setEnergy(currentEnergy);
+                        if (serverWorld.getBlockEntity(pos) instanceof AbstractEnergyBlockEntity newAbstractEnergyBlockEntity) {
+                            newAbstractEnergyBlockEntity.setEnergy(currentEnergy);
+                            newAbstractEnergyBlockEntity.setVolume(currentVolume);
+                            if (newAbstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
+                                if (currentStreamUrl != null) {
+                                    radioBlockEntity.setStreamUrl(currentStreamUrl);
+                                }
+
+                                if (currentSpeakers != null) {
+                                    radioBlockEntity.setSpeakers(currentSpeakers);
+                                }
+                            }
                         }
                     }
                 }
