@@ -1,0 +1,23 @@
+{
+  "block.meyuugaosradio.radio": "Радио",
+  "block.meyuugaosradio.speaker": "Динамик",
+  "item.meyuugaosradio.radio": "Радио",
+  "item.meyuugaosradio.speaker": "Динамик",
+  "item.meyuugaosradio.remote_controller": "Пульт дистанционного управления",
+  "item.meyuugaosradio.electronic_circuit": "Электронная схема",
+  "item.meyuugaosradio.battery": "Батарея",
+  "item.meyuugaosradio.small_battery": "Маленькая батарейка",
+  "item.meyuugaosradio.antenna": "Антенна",
+  "item.meyuugaosradio.small_membrane": "Маленькая мембрана",
+  "item.meyuugaosradio.membrane": "Мембрана",
+  "tooltip.energy": "Энергия:",
+  "tooltip.usage": "Потребление:",
+  "tooltip.usage.ticksuffix": "Тик",
+  "tooltip.usage.usesuffix": "Использование",
+  "error.alreadyconnected": "Данный динамик уже подключён к другому радио!",
+  "error.toofar": "Данный динамик находится слишком далеко от радио!",
+  "error.notenoughenergy": "Не хватает энергии, чтобы сделать это!",
+  "text.autoconfig.meyuugaosradio_client.title": "Настройки MeYuugao's Radio",
+  "text.autoconfig.meyuugaosradio_client.option.volume": "Громкость",
+  "gamerule.meyuugaosradioConnectRadius": "Максимальный радиус подключения радио"
+}
