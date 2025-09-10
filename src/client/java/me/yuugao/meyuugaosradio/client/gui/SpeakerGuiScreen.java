@@ -51,7 +51,6 @@ public class SpeakerGuiScreen extends VolumeControlGuiScreen {
 
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         super.renderVolumeControls(context, textRenderer);
-        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override

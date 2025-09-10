@@ -80,4 +80,10 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
         this.streamUrl = streamUrl;
         markDirty();
     }
+
+    public void setSpeakers(List<BlockPos> speakers) {
+        this.speakers.clear();
+        this.speakers.addAll(speakers);
+        markDirty();
+    }
 }

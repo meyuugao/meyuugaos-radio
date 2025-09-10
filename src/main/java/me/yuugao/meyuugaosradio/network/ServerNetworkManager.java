@@ -1,8 +1,5 @@
 package me.yuugao.meyuugaosradio.network;
 
-import static me.yuugao.meyuugaosradio.network.NetworkConstants.*;
-
-
 import me.yuugao.meyuugaosradio.Radio;
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
@@ -14,37 +11,49 @@ import me.yuugao.meyuugaosradio.entity.SpeakerBlockEntity;
 import me.yuugao.meyuugaosradio.item.RemoteControllerItem;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ServerNetworkManager {
     public static void initialize() {
-        ServerPlayNetworking.registerGlobalReceiver(CLIENT_BLOCKS_UPDATE_PACKET, (server, player, handler, buf, responseSender) -> {
-            boolean enabled = buf.readBoolean();
-            int count = buf.readInt();
-            List<BlockPos> blocks = new ArrayList<>();
-            for (int i = 0; i < count; i++) {
-                blocks.add(buf.readBlockPos());
-            }
-            BlockPos speakerPos = buf.readBlockPos();
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerRadioPayload.ID, NetworkConstants.ServerRadioPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerRequestBlocksPayload.ID, NetworkConstants.ServerRequestBlocksPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerRadioGlobalUnbindPayload.ID, NetworkConstants.ServerRadioGlobalUnbindPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerSpeakerGlobalUnbindPayload.ID, NetworkConstants.ServerSpeakerGlobalUnbindPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerAddBlockPayload.ID, NetworkConstants.ServerAddBlockPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerRemoveBlockPayload.ID, NetworkConstants.ServerRemoveBlockPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerPlayerSendMessagePayload.ID, NetworkConstants.ServerPlayerSendMessagePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerOpenRadioGuiPayload.ID, NetworkConstants.ServerOpenRadioGuiPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerOpenSpeakerGuiPayload.ID, NetworkConstants.ServerOpenSpeakerGuiPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerStreamStopPayload.ID, NetworkConstants.ServerStreamStopPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerStreamStartPayload.ID, NetworkConstants.ServerStreamStartPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerVolumeUpdatePayload.ID, NetworkConstants.ServerVolumeUpdatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerGlowClearPayload.ID, NetworkConstants.ServerGlowClearPayload.CODEC);
 
-            server.execute(() -> serverSpeakerUse(player, enabled, blocks, player.getWorld(), speakerPos));
+        PayloadTypeRegistry.playC2S().register(NetworkConstants.ClientBlocksUpdatePayload.ID, NetworkConstants.ClientBlocksUpdatePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NetworkConstants.ClientRemotecontrollerOnClickPayload.ID, NetworkConstants.ClientRemotecontrollerOnClickPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NetworkConstants.ClientRadioStateSwitchPayload.ID, NetworkConstants.ClientRadioStateSwitchPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NetworkConstants.ClientSpeakerStateSwitchPayload.ID, NetworkConstants.ClientSpeakerStateSwitchPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NetworkConstants.ClientVolumeUpdatePayload.ID, NetworkConstants.ClientVolumeUpdatePayload.CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientBlocksUpdatePayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> serverSpeakerUse(player, payload.enabled(), payload.blocks(), player.getWorld(), payload.speakerPos()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(CLIENT_REMOTECONTROLLER_ONCLICK_PACKET, (server, player, handler, buf, responseSender) -> {
-            server.execute(() -> {
+        ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientRemotecontrollerOnClickPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> {
                 ItemStack stack = player.getMainHandStack();
                 if (stack.getItem() instanceof RemoteControllerItem remoteControllerItem) {
                     remoteControllerItem.onLeftClick(player.getWorld(), player);
@@ -52,53 +61,73 @@ public class ServerNetworkManager {
             });
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(CLIENT_RADIO_STATE_SWITCH_PACKET, (server, player, handler, buf, responseSender) -> {
-            BlockPos pos = buf.readBlockPos();
-            String streamUrl = buf.readString();
-            server.execute(() -> serverRadioStateSwitch(player.getWorld(), pos, streamUrl));
+        ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientRadioStateSwitchPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> serverRadioStateSwitch(player.getWorld(), payload.pos(), payload.streamUrl()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(CLIENT_SPEAKER_STATE_SWITCH_PACKET, (server, player, handler, buf, responseSender) -> {
-            BlockPos pos = buf.readBlockPos();
-            server.execute(() -> serverSpeakerStateSwitch(player.getWorld(), pos));
+        ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientSpeakerStateSwitchPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> serverSpeakerStateSwitch(player.getWorld(), payload.pos()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(CLIENT_VOLUME_UPDATE_PACKET, (server, player, handler, buf, responseSender) -> {
-            BlockPos pos = buf.readBlockPos();
-            float volume = buf.readFloat();
-            float volumeMultiplier = buf.readFloat();
-            server.execute(() -> serverVolumeUpdate(player.getWorld(), pos, volume, volumeMultiplier));
+        ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientVolumeUpdatePayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> serverVolumeUpdate(player.getWorld(), payload.pos(), payload.volume(), payload.volumeMultiplier()));
         });
     }
 
     public static void sendServerRadioPacket(ServerPlayerEntity player, RadioBlockEntity radioBlockEntity) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(radioBlockEntity.getPos());
-        List<BlockPos> speakers = radioBlockEntity.getSpeakers();
-        buf.writeInt(speakers.size());
-        for (BlockPos speakerPos : speakers) {
-            buf.writeBlockPos(speakerPos);
-        }
-
-        ServerPlayNetworking.send(player, SERVER_RADIO_PACKET, buf);
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerRadioPayload(radioBlockEntity.getPos(), radioBlockEntity.getSpeakers()));
     }
 
     public static void sendServerRequestBlocks(ServerPlayerEntity player, BlockPos speakerPos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(speakerPos);
-        ServerPlayNetworking.send(player, SERVER_REQUEST_BLOCKS_PACKET, buf);
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerRequestBlocksPayload(speakerPos));
     }
 
     public static void sendRadioGlobalUnbind(ServerPlayerEntity player, BlockPos radioPos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(radioPos);
-        ServerPlayNetworking.send(player, SERVER_RADIO_GLOBALUNBIND_PACKET, buf);
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerRadioGlobalUnbindPayload(radioPos));
     }
 
     public static void sendSpeakerGlobalUnbind(ServerPlayerEntity player, BlockPos speakerPos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(speakerPos);
-        ServerPlayNetworking.send(player, SERVER_SPEAKER_GLOBALUNBIND_PACKET, buf);
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerSpeakerGlobalUnbindPayload(speakerPos));
+    }
+
+    public static void sendServerAddBlockPacket(ServerPlayerEntity player, BlockPos pos, float r, float g, float b, float a) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerAddBlockPayload(pos, r, g, b, a));
+    }
+
+    public static void sendServerRemoveBlockPacket(ServerPlayerEntity player, BlockPos pos) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerRemoveBlockPayload(pos));
+    }
+
+    public static void sendServerPlayerSendMessagePacket(ServerPlayerEntity player, Text text, boolean overlay) {
+        String textJson = Text.Serialization.toJsonString(text, player.getRegistryManager());
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerPlayerSendMessagePayload(textJson, overlay));
+    }
+
+    public static void sendServerOpenRadioGuiPacket(ServerPlayerEntity player, BlockPos pos, String streamUrl, float volume) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerOpenRadioGuiPayload(pos, streamUrl, volume));
+    }
+
+    public static void sendServerOpenSpeakerGuiPacket(ServerPlayerEntity player, BlockPos pos, float volume) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerOpenSpeakerGuiPayload(pos, volume));
+    }
+
+    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerStreamStopPayload(streamUrl));
+    }
+
+    public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerStreamStartPayload(streamUrl));
+    }
+
+    public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerVolumeUpdatePayload(streamUrl, volume));
+    }
+
+    public static void sendServerGlowClearPacket(ServerPlayerEntity player) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerGlowClearPayload());
     }
 
     private static void serverSpeakerUse(ServerPlayerEntity player, boolean renderEnabled, List<BlockPos> blocks, World world, BlockPos speakerPos) {
@@ -190,66 +219,5 @@ public class ServerNetworkManager {
                 ServerHlsAudioManager.updateSoundSourceVolume(streamUrl, pos, volume * volumeMultiplier, world.getRegistryKey());
             }
         }
-    }
-
-    private static void sendServerAddBlockPacket(ServerPlayerEntity player, BlockPos pos, float r, float g, float b, float a) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeFloat(r);
-        buf.writeFloat(g);
-        buf.writeFloat(b);
-        buf.writeFloat(a);
-        ServerPlayNetworking.send(player, SERVER_ADD_BLOCK_PACKET, buf);
-    }
-
-    private static void sendServerRemoveBlockPacket(ServerPlayerEntity player, BlockPos pos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        ServerPlayNetworking.send(player, SERVER_REMOVE_BLOCK_PACKET, buf);
-    }
-
-    public static void sendServerPlayerSendMessagePacket(ServerPlayerEntity player, Text text, boolean overlay) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeText(text);
-        buf.writeBoolean(overlay);
-        ServerPlayNetworking.send(player, SERVER_PLAYER_SENDMESSAGE_PACKET, buf);
-    }
-
-    public static void sendServerOpenRadioGuiPacket(ServerPlayerEntity player, BlockPos pos, String streamUrl, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeString(streamUrl);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_OPEN_RADIO_GUI_PACKET, buf);
-    }
-
-    public static void sendServerOpenSpeakerGuiPacket(ServerPlayerEntity player, BlockPos pos, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_OPEN_SPEAKER_GUI_PACKET, buf);
-    }
-
-    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        ServerPlayNetworking.send(player, SERVER_STREAM_STOP_PACKET, buf);
-    }
-
-    public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        ServerPlayNetworking.send(player, SERVER_STREAM_START_PACKET, buf);
-    }
-
-    public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_VOLUME_UPDATE_PACKET, buf);
-    }
-
-    public static void sendServerGlowClearPacket(ServerPlayerEntity player) {
-        ServerPlayNetworking.send(player, SERVER_GLOW_CLEAR_PACKET, PacketByteBufs.create());
     }
 }

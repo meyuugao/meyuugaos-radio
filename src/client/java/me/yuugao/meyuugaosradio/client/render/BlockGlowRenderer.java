@@ -80,15 +80,11 @@ public class BlockGlowRenderer {
             return;
         }
 
-        vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-
-        blocksToRender.forEach((pos, glow) -> {
-            renderBlockFaces(buffer, pos, glow.r(), glow.g(), glow.b(), glow.a());
-        });
+        blocksToRender.forEach((pos, glow) -> renderBlockFaces(buffer, pos, glow.r(), glow.g(), glow.b(), glow.a()));
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
@@ -96,39 +92,45 @@ public class BlockGlowRenderer {
     }
 
     private static void renderBlockFaces(BufferBuilder buffer, BlockPos pos, float r, float g, float b, float a) {
-        double x = pos.getX();
-        double y = pos.getY();
-        double z = pos.getZ();
+        float x = pos.getX();
+        float y = pos.getY();
+        float z = pos.getZ();
         float offset = 0.001f;
 
-        buffer.vertex(x, y + 1 + offset, z).color(r, g, b, a).next();
-        buffer.vertex(x, y + 1 + offset, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y + 1 + offset, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y + 1 + offset, z).color(r, g, b, a).next();
+        // Top face
+        buffer.vertex(x, y + 1 + offset, z).color(r, g, b, a);
+        buffer.vertex(x, y + 1 + offset, z + 1).color(r, g, b, a);
+        buffer.vertex(x + 1, y + 1 + offset, z + 1).color(r, g, b, a);
+        buffer.vertex(x + 1, y + 1 + offset, z).color(r, g, b, a);
 
-        buffer.vertex(x, y - offset, z).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y - offset, z).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y - offset, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x, y - offset, z + 1).color(r, g, b, a).next();
+        // Bottom face
+        buffer.vertex(x, y - offset, z).color(r, g, b, a);
+        buffer.vertex(x + 1, y - offset, z).color(r, g, b, a);
+        buffer.vertex(x + 1, y - offset, z + 1).color(r, g, b, a);
+        buffer.vertex(x, y - offset, z + 1).color(r, g, b, a);
 
-        buffer.vertex(x, y, z - offset).color(r, g, b, a).next();
-        buffer.vertex(x, y + 1, z - offset).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y + 1, z - offset).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y, z - offset).color(r, g, b, a).next();
+        // North face
+        buffer.vertex(x, y, z - offset).color(r, g, b, a);
+        buffer.vertex(x, y + 1, z - offset).color(r, g, b, a);
+        buffer.vertex(x + 1, y + 1, z - offset).color(r, g, b, a);
+        buffer.vertex(x + 1, y, z - offset).color(r, g, b, a);
 
-        buffer.vertex(x, y, z + 1 + offset).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y, z + 1 + offset).color(r, g, b, a).next();
-        buffer.vertex(x + 1, y + 1, z + 1 + offset).color(r, g, b, a).next();
-        buffer.vertex(x, y + 1, z + 1 + offset).color(r, g, b, a).next();
+        // South face
+        buffer.vertex(x, y, z + 1 + offset).color(r, g, b, a);
+        buffer.vertex(x + 1, y, z + 1 + offset).color(r, g, b, a);
+        buffer.vertex(x + 1, y + 1, z + 1 + offset).color(r, g, b, a);
+        buffer.vertex(x, y + 1, z + 1 + offset).color(r, g, b, a);
 
-        buffer.vertex(x - offset, y, z).color(r, g, b, a).next();
-        buffer.vertex(x - offset, y, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x - offset, y + 1, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x - offset, y + 1, z).color(r, g, b, a).next();
+        // West face
+        buffer.vertex(x - offset, y, z).color(r, g, b, a);
+        buffer.vertex(x - offset, y, z + 1).color(r, g, b, a);
+        buffer.vertex(x - offset, y + 1, z + 1).color(r, g, b, a);
+        buffer.vertex(x - offset, y + 1, z).color(r, g, b, a);
 
-        buffer.vertex(x + 1 + offset, y, z).color(r, g, b, a).next();
-        buffer.vertex(x + 1 + offset, y + 1, z).color(r, g, b, a).next();
-        buffer.vertex(x + 1 + offset, y + 1, z + 1).color(r, g, b, a).next();
-        buffer.vertex(x + 1 + offset, y, z + 1).color(r, g, b, a).next();
+        // East face
+        buffer.vertex(x + 1 + offset, y, z).color(r, g, b, a);
+        buffer.vertex(x + 1 + offset, y + 1, z).color(r, g, b, a);
+        buffer.vertex(x + 1 + offset, y + 1, z + 1).color(r, g, b, a);
+        buffer.vertex(x + 1 + offset, y, z + 1).color(r, g, b, a);
     }
 }

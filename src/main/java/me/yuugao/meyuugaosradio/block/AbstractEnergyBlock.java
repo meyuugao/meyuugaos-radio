@@ -9,6 +9,7 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -74,6 +75,19 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
         });
     }
 
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
+
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
+            NbtCompound nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA).getNbt();
+            if (nbt != null) {
+                abstractEnergyBlockEntity.readNbt(nbt, world.getRegistryManager());
+            }
+        }
+    }
+
     public void rotateBlock(World world, BlockPos pos, BlockState state) {
         if (state.contains(Properties.HORIZONTAL_FACING)) {
             Direction newFacing = state.get(FACING).rotateYClockwise();
@@ -90,11 +104,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
 
         if (be instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             NbtCompound nbt = new NbtCompound();
-            NbtCompound beTag = new NbtCompound();
-            beTag.putLong("Energy", abstractEnergyBlockEntity.getAmount());
-            beTag.putLong("Capacity", abstractEnergyBlockEntity.getCapacity());
-            beTag.putLong("Usage", abstractEnergyBlockEntity.getUsage());
-            nbt.put("BlockEntityTag", beTag);
+            abstractEnergyBlockEntity.writeNbt(nbt, world.getRegistryManager());
             drop.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
         }
 

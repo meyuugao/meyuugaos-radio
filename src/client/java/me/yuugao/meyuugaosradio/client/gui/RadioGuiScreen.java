@@ -199,7 +199,6 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
         context.disableScissor();
 
         super.renderVolumeControls(context, textRenderer);
-        super.render(context, mouseX, mouseY, delta);
     }
 
     private int findWordStart(int position) {

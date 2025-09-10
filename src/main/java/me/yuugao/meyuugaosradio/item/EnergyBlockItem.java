@@ -1,7 +1,6 @@
 package me.yuugao.meyuugaosradio.item;
 
 import net.minecraft.block.Block;
-import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.BlockItem;
@@ -12,7 +11,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -34,19 +32,19 @@ public class EnergyBlockItem extends BlockItem {
     }
 
     private void setupEnergyComponents(ItemStack stack) {
-        NbtCompound blockEntityTag = new NbtCompound();
-        blockEntityTag.putLong("Energy", 0);
-        blockEntityTag.putLong("Capacity", this.capacity);
-        blockEntityTag.putInt("Usage", this.usage);
+        NbtCompound energyData = new NbtCompound();
+        energyData.putLong("Energy", 0);
+        energyData.putLong("Capacity", this.capacity);
+        energyData.putInt("Usage", this.usage);
 
-        stack.set(DataComponentTypes.BLOCK_ENTITY_DATA, NbtComponent.of(blockEntityTag));
+        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(energyData));
     }
 
-    private NbtCompound getOrCreateBlockEntityTag(ItemStack stack) {
-        NbtComponent nbtComponent = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
+    private NbtCompound getOrCreateEnergyData(ItemStack stack) {
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         if (nbtComponent == null) {
             setupEnergyComponents(stack);
-            nbtComponent = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
+            nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         }
         return nbtComponent.copyNbt();
     }
@@ -55,10 +53,10 @@ public class EnergyBlockItem extends BlockItem {
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
 
-        NbtCompound blockEntityTag = getOrCreateBlockEntityTag(stack);
-        long energy = blockEntityTag.getLong("Energy");
-        long capacity = blockEntityTag.getLong("Capacity");
-        int usage = blockEntityTag.getInt("Usage");
+        NbtCompound energyData = getOrCreateEnergyData(stack);
+        long energy = energyData.getLong("Energy");
+        long capacity = energyData.getLong("Capacity");
+        int usage = energyData.getInt("Usage");
 
         tooltip.add(createEnergyText(energy, capacity));
         tooltip.add(createUsageText(usage));
