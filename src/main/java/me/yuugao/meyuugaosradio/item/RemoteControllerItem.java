@@ -24,8 +24,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 
 public class RemoteControllerItem extends Item {

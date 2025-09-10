@@ -2,10 +2,7 @@ package me.yuugao.meyuugaosradio.network;
 
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -220,7 +217,8 @@ public class NetworkConstants {
     public record ServerGlowClearPayload() implements CustomPayload {
         public static final Id<ServerGlowClearPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_glow_clear_packet"));
         public static final PacketCodec<RegistryByteBuf, ServerGlowClearPayload> CODEC = PacketCodec.of(
-                (buf, payload) -> {},
+                (buf, payload) -> {
+                },
                 buf -> new ServerGlowClearPayload()
         );
 
@@ -230,7 +228,8 @@ public class NetworkConstants {
         }
     }
 
-    public record ClientBlocksUpdatePayload(boolean enabled, int count, List<BlockPos> blocks, BlockPos speakerPos) implements CustomPayload {
+    public record ClientBlocksUpdatePayload(boolean enabled, int count, List<BlockPos> blocks,
+                                            BlockPos speakerPos) implements CustomPayload {
         public static final Id<ClientBlocksUpdatePayload> ID = new Id<>(Identifier.of(MOD_ID, "client_blocks_update_packet"));
         public static final PacketCodec<RegistryByteBuf, ClientBlocksUpdatePayload> CODEC = PacketCodec.of(
                 (payload, buf) -> {
@@ -262,7 +261,8 @@ public class NetworkConstants {
     public record ClientRemotecontrollerOnClickPayload() implements CustomPayload {
         public static final Id<ClientRemotecontrollerOnClickPayload> ID = new Id<>(Identifier.of(MOD_ID, "client_remotecontroller_onclick_packet"));
         public static final PacketCodec<RegistryByteBuf, ClientRemotecontrollerOnClickPayload> CODEC = PacketCodec.of(
-                (buf, payload) -> {},
+                (buf, payload) -> {
+                },
                 buf -> new ClientRemotecontrollerOnClickPayload()
         );
 
@@ -301,7 +301,8 @@ public class NetworkConstants {
         }
     }
 
-    public record ClientVolumeUpdatePayload(BlockPos pos, float volume, float volumeMultiplier) implements CustomPayload {
+    public record ClientVolumeUpdatePayload(BlockPos pos, float volume,
+                                            float volumeMultiplier) implements CustomPayload {
         public static final Id<ClientVolumeUpdatePayload> ID = new Id<>(Identifier.of(MOD_ID, "client_volume_update_packet"));
         public static final PacketCodec<RegistryByteBuf, ClientVolumeUpdatePayload> CODEC = PacketCodec.of(
                 (payload, buf) -> {
