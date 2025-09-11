@@ -54,7 +54,7 @@ public class BlockGlowRenderer {
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
         if (!enabled || vertexBuffer == null) return;
 
-        RenderSystem.setShader();
+        //RenderSystem.setShader();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.depthMask(false);

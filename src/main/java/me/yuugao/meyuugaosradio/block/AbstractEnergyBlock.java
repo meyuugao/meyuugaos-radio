@@ -30,8 +30,8 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     public static final EnumProperty<DirectionEnum> DIRECTION = EnumProperty.of("direction", DirectionEnum.class);
     public static final EnumProperty<EnergyStateEnum> ENERGY_STATE = EnumProperty.of("energy_state", EnergyStateEnum.class);
 
-    protected AbstractEnergyBlock() {
-        super(AbstractBlock.Settings.create().nonOpaque().strength(2.0f));
+    protected AbstractEnergyBlock(Settings settings) {
+        super(settings.nonOpaque().strength(2.0f));
         this.setDefaultState(stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(DIRECTION, DirectionEnum.SIDE)

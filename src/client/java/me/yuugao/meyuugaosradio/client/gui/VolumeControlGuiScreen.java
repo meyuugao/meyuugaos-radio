@@ -6,6 +6,7 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
@@ -181,7 +182,14 @@ public abstract class VolumeControlGuiScreen extends Screen {
     protected void renderVolumeControls(DrawContext context, TextRenderer textRenderer) {
         String volumeText = String.valueOf((int) (volume * 100));
         int volumeTextY = y + getVolumeTextFieldY() + 4;
-        context.drawTexture(VOLUME_TEXT_FIELD_TEXTURE, x + getVolumeTextFieldX(), y + getVolumeTextFieldY(), 0, 0, VOLUME_TEXT_FIELD_WIDTH, VOLUME_TEXT_FIELD_HEIGHT, VOLUME_TEXT_FIELD_WIDTH, VOLUME_TEXT_FIELD_HEIGHT);
+
+        context.drawTexture(RenderLayer::getGuiTextured,
+                VOLUME_TEXT_FIELD_TEXTURE,
+                x + getVolumeTextFieldX(), y + getVolumeTextFieldY(),
+                0, 0,
+                VOLUME_TEXT_FIELD_WIDTH, VOLUME_TEXT_FIELD_HEIGHT,
+                VOLUME_TEXT_FIELD_WIDTH, VOLUME_TEXT_FIELD_HEIGHT);
+
         context.drawText(textRenderer, volumeText, x + getVolumeTextFieldX() + 4, volumeTextY, 0xFFFFFF, false);
 
         if (volumeTextFieldFocused) {
@@ -189,16 +197,32 @@ public abstract class VolumeControlGuiScreen extends Screen {
             int cursorX = x + getVolumeTextFieldX() + 4 + textWidth;
 
             if (volumeCursorVisible) {
-                context.drawTexture(TEXT_FIELD_CURSOR_TEXTURE, cursorX, volumeTextY, 0, 0, TEXT_FIELD_CURSOR_WIDTH, TEXT_FIELD_CURSOR_HEIGHT - 1, 1, 7);
+                context.drawTexture(RenderLayer::getGuiTextured,
+                        TEXT_FIELD_CURSOR_TEXTURE,
+                        cursorX, volumeTextY,
+                        0, 0,
+                        TEXT_FIELD_CURSOR_WIDTH, TEXT_FIELD_CURSOR_HEIGHT - 1,
+                        1, 7);
             }
         }
 
-        context.drawTexture(VOLUME_SLIDER_TRACK_TEXTURE, x + getVolumeSliderTrackX(), y + getVolumeSliderTrackY(), 0, 0, VOLUME_SLIDER_TRACK_WIDTH, VOLUME_SLIDER_TRACK_HEIGHT, VOLUME_SLIDER_TRACK_WIDTH, VOLUME_SLIDER_TRACK_HEIGHT);
+        context.drawTexture(RenderLayer::getGuiTextured,
+                VOLUME_SLIDER_TRACK_TEXTURE,
+                x + getVolumeSliderTrackX(), y + getVolumeSliderTrackY(),
+                0, 0,
+                VOLUME_SLIDER_TRACK_WIDTH, VOLUME_SLIDER_TRACK_HEIGHT,
+                VOLUME_SLIDER_TRACK_WIDTH, VOLUME_SLIDER_TRACK_HEIGHT);
 
         int trackTop = y + getVolumeSliderTrackY() + 1;
         int trackBottom = y + getVolumeSliderTrackY() + 1 + VOLUME_SLIDER_TRACK_HEIGHT - VOLUME_SLIDER_THUMB_HEIGHT - 2;
         int thumbY = trackTop + (int) ((1.0f - volume) * (trackBottom - trackTop));
-        context.drawTexture(VOLUME_SLIDER_THUMB_TEXTURE, x + getVolumeSliderTrackX() - 2, thumbY, 0, 0, VOLUME_SLIDER_THUMB_WIDTH, VOLUME_SLIDER_THUMB_HEIGHT, VOLUME_SLIDER_THUMB_WIDTH, VOLUME_SLIDER_THUMB_HEIGHT);
+
+        context.drawTexture(RenderLayer::getGuiTextured,
+                VOLUME_SLIDER_THUMB_TEXTURE,
+                x + getVolumeSliderTrackX() - 2, thumbY,
+                0, 0,
+                VOLUME_SLIDER_THUMB_WIDTH, VOLUME_SLIDER_THUMB_HEIGHT,
+                VOLUME_SLIDER_THUMB_WIDTH, VOLUME_SLIDER_THUMB_HEIGHT);
     }
 
     protected void updateVolumeFromText(String text) {

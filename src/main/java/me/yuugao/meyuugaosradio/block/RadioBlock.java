@@ -9,6 +9,7 @@ import me.yuugao.meyuugaosradio.entity.SpeakerBlockEntity;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
@@ -23,8 +24,8 @@ import java.util.List;
 import com.mojang.serialization.MapCodec;
 
 public class RadioBlock extends AbstractEnergyBlock {
-    public RadioBlock() {
-        super();
+    public RadioBlock(Settings settings) {
+        super(settings);
     }
 
     @Override

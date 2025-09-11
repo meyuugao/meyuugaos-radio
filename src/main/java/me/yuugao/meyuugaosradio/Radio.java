@@ -2,7 +2,6 @@ package me.yuugao.meyuugaosradio;
 
 import static me.yuugao.meyuugaosradio.Constants.*;
 
-
 import me.yuugao.meyuugaosradio.block.RadioBlock;
 import me.yuugao.meyuugaosradio.block.SpeakerBlock;
 import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
@@ -18,40 +17,42 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameRules;
 
+import java.util.AbstractMap;
+import java.util.function.Function;
+
 import team.reborn.energy.api.EnergyStorage;
 
 public class Radio implements ModInitializer {
-    private static final Block RADIO_BLOCK = new RadioBlock();
-    private static final Block SPEAKER_BLOCK = new SpeakerBlock();
+    private static Block RADIO_BLOCK;
+    private static Block SPEAKER_BLOCK;
 
-    public static final Item RADIO_BLOCK_ITEM = new EnergyBlockItem(RADIO_BLOCK, new Item.Settings().maxCount(DEFAULT_STACK_SIZE), RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE);
-    public static final Item SPEAKER_BLOCK_ITEM = new EnergyBlockItem(SPEAKER_BLOCK, new Item.Settings().maxCount(DEFAULT_STACK_SIZE), SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE);
+    private static Item RADIO_BLOCK_ITEM;
+    private static Item SPEAKER_BLOCK_ITEM;
+    private static Item REMOTE_CONTROLLER_ITEM;
+    private static Item ELECTRONIC_CIRCUIT_ITEM;
+    private static Item BATTERY_ITEM;
+    private static Item SMALL_BATTERY_ITEM;
+    private static Item ANTENNA_ITEM;
+    private static Item SMALL_MEMBRANE_ITEM;
+    private static Item MEMBRANE_ITEM;
 
-    private final RemoteControllerItem REMOTE_CONTROLLER_ITEM = new RemoteControllerItem(new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
-    private final Item ELECTRONIC_CIRCUIT_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-    private final Item BATTERY_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-    private final Item SMALL_BATTERY_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-    private final Item ANTENNA_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-    private final Item SMALL_MEMBRANE_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-    private final Item MEMBRANE_ITEM = new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-
-    public static final BlockEntityType<RadioBlockEntity> RADIO_BLOCK_ENTITY =
-            Registry.register(Registries.BLOCK_ENTITY_TYPE, id(RADIO_BLOCK_ENTITY_ID),
-                    FabricBlockEntityTypeBuilder.create(RadioBlockEntity::new, RADIO_BLOCK).build());
-
-    public static final BlockEntityType<SpeakerBlockEntity> SPEAKER_BLOCK_ENTITY =
-            Registry.register(Registries.BLOCK_ENTITY_TYPE, id(SPEAKER_BLOCK_ENTITY_ID),
-                    FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, SPEAKER_BLOCK).build());
+    public static BlockEntityType<RadioBlockEntity> RADIO_BLOCK_ENTITY;
+    public static BlockEntityType<SpeakerBlockEntity> SPEAKER_BLOCK_ENTITY;
 
     public static final SoundEvent BLOCK_DISMANTLE = registerSound(BLOCK_DISMANTLE_SOUND_ID);
 
@@ -62,6 +63,7 @@ public class Radio implements ModInitializer {
     public void onInitialize() {
         registerBlocks();
         registerItems();
+        registerBlockEntities();
         registerItemGroups();
         registerEnergyStorages();
         ServerNetworkManager.initialize();
@@ -69,20 +71,53 @@ public class Radio implements ModInitializer {
     }
 
     private void registerBlocks() {
-        Registry.register(Registries.BLOCK, id(RADIO_BLOCK_ID), RADIO_BLOCK);
-        Registry.register(Registries.BLOCK, id(SPEAKER_BLOCK_ID), SPEAKER_BLOCK);
+        AbstractMap.SimpleEntry<Block, Item> registeredRadio = registerBlock(RADIO_BLOCK_ID, RadioBlock::new, AbstractBlock.Settings.create().strength(2.0f));
+        RADIO_BLOCK = registeredRadio.getKey();
+        RADIO_BLOCK_ITEM = registeredRadio.getValue();
+
+        AbstractMap.SimpleEntry<Block, Item> registeredSpeaker = registerBlock(SPEAKER_BLOCK_ID, SpeakerBlock::new, AbstractBlock.Settings.create().strength(2.0f));
+        SPEAKER_BLOCK = registeredRadio.getKey();
+        SPEAKER_BLOCK_ITEM = registeredRadio.getValue();
+    }
+
+    private static AbstractMap.SimpleEntry<Block, Item> registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
+        final Identifier identifier = Identifier.of("meyuugaosradio", path);
+        final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
+
+        final Block block = Blocks.register(registryKey, factory, settings);
+        final Item item = Items.register(block);
+        return new AbstractMap.SimpleEntry<>(block, item);
     }
 
     private void registerItems() {
-        Registry.register(Registries.ITEM, id(REMOTE_CONTROLLER_ID), REMOTE_CONTROLLER_ITEM);
-        Registry.register(Registries.ITEM, id(RADIO_BLOCK_ID), RADIO_BLOCK_ITEM);
-        Registry.register(Registries.ITEM, id(SPEAKER_BLOCK_ID), SPEAKER_BLOCK_ITEM);
-        Registry.register(Registries.ITEM, id(ELECTRONIC_CIRCUIT_ID), ELECTRONIC_CIRCUIT_ITEM);
-        Registry.register(Registries.ITEM, id(BATTERY_ID), BATTERY_ITEM);
-        Registry.register(Registries.ITEM, id(SMALL_BATTERY_ID), SMALL_BATTERY_ITEM);
-        Registry.register(Registries.ITEM, id(ANTENNA_ID), ANTENNA_ITEM);
-        Registry.register(Registries.ITEM, id(SMALL_MEMBRANE_ID), SMALL_MEMBRANE_ITEM);
-        Registry.register(Registries.ITEM, id(MEMBRANE_ID), MEMBRANE_ITEM);
+        REMOTE_CONTROLLER_ITEM = Registry.register(Registries.ITEM, id(REMOTE_CONTROLLER_ID),
+                new RemoteControllerItem(new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE)));
+
+        ELECTRONIC_CIRCUIT_ITEM = Registry.register(Registries.ITEM, id(ELECTRONIC_CIRCUIT_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+
+        BATTERY_ITEM = Registry.register(Registries.ITEM, id(BATTERY_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+
+        SMALL_BATTERY_ITEM = Registry.register(Registries.ITEM, id(SMALL_BATTERY_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+
+        ANTENNA_ITEM = Registry.register(Registries.ITEM, id(ANTENNA_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+
+        SMALL_MEMBRANE_ITEM = Registry.register(Registries.ITEM, id(SMALL_MEMBRANE_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+
+        MEMBRANE_ITEM = Registry.register(Registries.ITEM, id(MEMBRANE_ID),
+                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+    }
+
+    private void registerBlockEntities() {
+        RADIO_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, id(RADIO_BLOCK_ENTITY_ID),
+                FabricBlockEntityTypeBuilder.create(RadioBlockEntity::new, RADIO_BLOCK).build());
+
+        SPEAKER_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, id(SPEAKER_BLOCK_ENTITY_ID),
+                FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, SPEAKER_BLOCK).build());
     }
 
     private void registerItemGroups() {

@@ -22,8 +22,8 @@ import net.minecraft.world.World;
 import com.mojang.serialization.MapCodec;
 
 public class SpeakerBlock extends AbstractEnergyBlock {
-    public SpeakerBlock() {
-        super();
+    public SpeakerBlock(Settings settings) {
+        super(settings);
     }
 
     @Override

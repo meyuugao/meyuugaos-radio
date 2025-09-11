@@ -11,6 +11,7 @@ import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.BlockPos;
 
 public class SpeakerGuiScreen extends VolumeControlGuiScreen {
@@ -42,12 +43,21 @@ public class SpeakerGuiScreen extends VolumeControlGuiScreen {
         }
 
         this.renderBackground(context, mouseX, mouseY, delta);
-        context.drawTexture(SPEAKER_GUI_TEXTURE, x, y, 0, 0, SPEAKER_GUI_WIDTH, SPEAKER_GUI_HEIGHT, SPEAKER_GUI_WIDTH, SPEAKER_GUI_HEIGHT);
 
-        context.drawTexture(MinecraftClient.getInstance().world.getBlockState(pos).get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED) ?
+        context.drawTexture(RenderLayer::getGuiTextured,
+                SPEAKER_GUI_TEXTURE,
+                x, y,
+                0, 0,
+                SPEAKER_GUI_WIDTH, SPEAKER_GUI_HEIGHT,
+                SPEAKER_GUI_WIDTH, SPEAKER_GUI_HEIGHT);
+
+        context.drawTexture(RenderLayer::getGuiTextured,
+                MinecraftClient.getInstance().world.getBlockState(pos).get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED) ?
                         SPEAKER_BUTTON_ENABLED_TEXTURE : SPEAKER_BUTTON_DISABLED_TEXTURE,
-                x + SPEAKER_BUTTON_X, y + SPEAKER_BUTTON_Y, 0, 0,
-                SPEAKER_BUTTON_WIDTH, SPEAKER_BUTTON_HEIGHT, SPEAKER_BUTTON_WIDTH, SPEAKER_BUTTON_HEIGHT);
+                x + SPEAKER_BUTTON_X, y + SPEAKER_BUTTON_Y,
+                0, 0,
+                SPEAKER_BUTTON_WIDTH, SPEAKER_BUTTON_HEIGHT,
+                SPEAKER_BUTTON_WIDTH, SPEAKER_BUTTON_HEIGHT);
 
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         super.renderVolumeControls(context, textRenderer);

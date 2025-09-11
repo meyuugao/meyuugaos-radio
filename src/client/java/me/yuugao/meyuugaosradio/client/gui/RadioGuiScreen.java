@@ -11,6 +11,7 @@ import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.BlockPos;
 
 import org.lwjgl.glfw.GLFW;
@@ -163,15 +164,28 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
         }
 
         this.renderBackground(context, mouseX, mouseY, delta);
-        context.drawTexture(RADIO_GUI_TEXTURE, x, y, 0, 0, RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT, RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT);
 
-        context.drawTexture(
+        context.drawTexture(RenderLayer::getGuiTextured,
+                RADIO_GUI_TEXTURE,
+                x, y,
+                0, 0,
+                RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT,
+                RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT);
+
+        context.drawTexture(RenderLayer::getGuiTextured,
                 MinecraftClient.getInstance().world.getBlockState(pos).get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED) ?
                         RADIO_BUTTON_ENABLED_TEXTURE : RADIO_BUTTON_DISABLED_TEXTURE,
-                x + RADIO_BUTTON_X, y + RADIO_BUTTON_Y, 0, 0, RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT, RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT
-        );
+                x + RADIO_BUTTON_X, y + RADIO_BUTTON_Y,
+                0, 0,
+                RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT,
+                RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT);
 
-        context.drawTexture(RADIO_MAIN_TEXT_FIELD_TEXTURE, x + TEXT_FIELD_X, y + TEXT_FIELD_Y, 0, 0, TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT, TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
+        context.drawTexture(RenderLayer::getGuiTextured,
+                RADIO_MAIN_TEXT_FIELD_TEXTURE,
+                x + TEXT_FIELD_X, y + TEXT_FIELD_Y,
+                0, 0,
+                TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT,
+                TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
 
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         int textX = x + TEXT_FIELD_X1 + 2;
@@ -192,7 +206,12 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
             int cursorX = textX + textWidth - textOffset - 1;
 
             if (cursorVisible) {
-                context.drawTexture(TEXT_FIELD_CURSOR_TEXTURE, cursorX, textY, 0, 0, TEXT_FIELD_CURSOR_WIDTH, TEXT_FIELD_CURSOR_HEIGHT, 1, 8);
+                context.drawTexture(RenderLayer::getGuiTextured,
+                        TEXT_FIELD_CURSOR_TEXTURE,
+                        cursorX, textY,
+                        0, 0,
+                        TEXT_FIELD_CURSOR_WIDTH, TEXT_FIELD_CURSOR_HEIGHT,
+                        1, 8);
             }
         }
 
