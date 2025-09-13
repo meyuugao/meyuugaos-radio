@@ -22,6 +22,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
 public class ServerNetworkManager {
@@ -205,7 +207,7 @@ public class ServerNetworkManager {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             abstractEnergyBlockEntity.setVolume(volume);
-            String streamUrl = "";
+            String streamUrl = StringUtils.EMPTY;
             if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
                 streamUrl = radioBlockEntity.getStreamUrl();
             } else if (abstractEnergyBlockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {
