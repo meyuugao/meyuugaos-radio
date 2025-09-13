@@ -87,9 +87,9 @@ public abstract class ItemStackMixin {
             Direction facing = context.getWorld().getBlockState(context.getBlockPos()).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = context.getWorld().getBlockState(context.getBlockPos()).get(AbstractEnergyBlock.DIRECTION);
             ServerHlsAudioManager.updateSoundSourceDirection(streamUrl, context.getBlockPos(), new Vec3d(
-                    direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 :
-                    direction == DirectionEnum.UP ? 1 : -1,
-                    direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize(),
+                            direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                            direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                            direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize(),
                     context.getWorld().getRegistryKey());
         }
     }
