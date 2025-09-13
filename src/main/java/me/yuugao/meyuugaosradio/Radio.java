@@ -102,7 +102,7 @@ public class Radio implements ModInitializer {
         return Blocks.register(registryKey, factory, settings);
     }
 
-    public Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
+    private Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
         RegistryKey<Item> registryKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of("meyuugaosradio", path));
         Item item = factory.apply(settings.registryKey(registryKey));
         Registry.register(Registries.ITEM, registryKey, item);
