@@ -1,5 +1,8 @@
 package me.yuugao.meyuugaosradio.network;
 
+import static me.yuugao.meyuugaosradio.Constants.MOD_ID;
+
+
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -10,8 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NetworkConstants {
-    public static final String MOD_ID = "meyuugaosradio";
-
     public record ServerRadioPayload(BlockPos pos, List<BlockPos> speakers) implements CustomPayload {
         public static final Id<ServerRadioPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_radio_packet"));
         public static final PacketCodec<RegistryByteBuf, ServerRadioPayload> CODEC = PacketCodec.of(

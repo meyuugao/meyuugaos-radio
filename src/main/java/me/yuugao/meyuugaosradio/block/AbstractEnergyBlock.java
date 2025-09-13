@@ -32,6 +32,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
 
     protected AbstractEnergyBlock(Settings settings) {
         super(settings.nonOpaque().strength(2.0f));
+
         this.setDefaultState(stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(DIRECTION, DirectionEnum.SIDE)
@@ -113,7 +114,9 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected Vec3d getVecDirection(World world, BlockPos pos) {
         Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
         DirectionEnum direction = world.getBlockState(pos).get(AbstractEnergyBlock.DIRECTION);
-        return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+
+        return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 :
+                direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
     }
 
     public void onEnabled(World world, BlockPos pos, BlockState state) {

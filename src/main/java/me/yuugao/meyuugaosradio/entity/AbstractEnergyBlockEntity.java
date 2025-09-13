@@ -14,29 +14,34 @@ import net.minecraft.util.math.BlockPos;
 import team.reborn.energy.api.EnergyStorage;
 
 public abstract class AbstractEnergyBlockEntity extends BlockEntity implements EnergyStorage {
-    protected long energy = 0;
+    protected long energy;
     protected final long capacity;
     protected final long usage;
-    protected float volume = 0.5f;
+    protected float volume;
 
     public AbstractEnergyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, long capacity, long usage) {
         super(type, pos, state);
+
+        this.energy = 0L;
         this.capacity = capacity;
         this.usage = usage;
+        this.volume = 0.5f;
     }
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
+
         nbt.putLong("Energy", energy);
         nbt.putLong("Capacity", capacity);
         nbt.putLong("Usage", usage);
         nbt.putFloat("Volume", volume);
-        super.writeNbt(nbt, registryLookup);
     }
 
     @Override
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
+
         this.energy = nbt.getLong("Energy");
         this.volume = nbt.contains("Volume") ? nbt.getFloat("Volume") : volume;
     }
@@ -61,7 +66,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
 
     @Override
     public long extract(long maxAmount, TransactionContext transaction) {
-        return 0;
+        return 0L;
     }
 
     @Override
@@ -91,8 +96,10 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
         if (energy >= usage) {
             energy -= usage;
             markDirty();
+
             return true;
         }
+
         return false;
     }
 

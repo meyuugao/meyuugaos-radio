@@ -1,5 +1,8 @@
 package me.yuugao.meyuugaosradio.events;
 
+import static me.yuugao.meyuugaosradio.Constants.SERVER_LOGGER;
+
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
@@ -19,9 +22,11 @@ public class ServerEventsManager {
     private static boolean shouldUnload = false;
 
     public static void initialize() {
-        ServerTickEvents.END_SERVER_TICK.register(minecraftServer -> minecraftServer.getWorlds().forEach(serverWorld -> ServerHlsAudioManager.onEndServerTick(serverWorld.getPlayers())));
+        ServerTickEvents.END_SERVER_TICK.register(minecraftServer ->
+                minecraftServer.getWorlds().forEach(serverWorld -> ServerHlsAudioManager.onEndServerTick(serverWorld.getPlayers())));
 
         ServerLifecycleEvents.SERVER_STOPPING.register(minecraftServer -> {
+            SERVER_LOGGER.info("Server stopping, unloading block entities and stopping all audio instances...");
             shouldUnload = true;
             ServerHlsAudioManager.stopAllAudioInstances();
         });
@@ -31,8 +36,8 @@ public class ServerEventsManager {
         });
 
         ServerBlockEntityEvents.BLOCK_ENTITY_UNLOAD.register((blockEntity, serverWorld) -> {
-            if (shouldUnload) { //tip: при выключении сервера
-                if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) { //tip: выключаем все радио и динамики
+            if (shouldUnload) {
+                if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
                     BlockState state = abstractEnergyBlockEntity.getCachedState();
                     if (state.get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED)) {
                         long currentEnergy = abstractEnergyBlockEntity.getAmount();

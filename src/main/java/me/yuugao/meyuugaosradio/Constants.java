@@ -2,8 +2,14 @@ package me.yuugao.meyuugaosradio;
 
 import net.minecraft.util.Identifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Constants {
     public static final String MOD_ID = "meyuugaosradio";
+
+    public static final Logger SERVER_LOGGER = LoggerFactory.getLogger("meyuugaosradio-server");
+    public static final Logger CLIENT_LOGGER = LoggerFactory.getLogger("meyuugaosradio-client");
 
     public static final String RADIO_BLOCK_ID = "radio";
     public static final String SPEAKER_BLOCK_ID = "speaker";
@@ -22,9 +28,13 @@ public class Constants {
     public static final String BLOCK_DISMANTLE_SOUND_ID = "block_dismantle";
 
     public static final long RADIO_ENERGY_CAPACITY = 100_000L;
-    public static final long SPEAKER_ENERGY_CAPACITY = 200_000L;
     public static final int RADIO_ENERGY_USAGE = 8;
+
+    public static final long SPEAKER_ENERGY_CAPACITY = 200_000L;
     public static final int SPEAKER_ENERGY_USAGE = 16;
+
+    public static final long REMOTE_CONTROLLER_ENERGY_CAPACITY = 10_000L;
+    public static final int REMOTE_CONTROLLER_ENERGY_USAGE = 8;
 
     public static final float RADIO_VOLUME_MULTIPLIER = 2f;
     public static final float SPEAKER_VOLUME_MULTIPLIER = 4f;
