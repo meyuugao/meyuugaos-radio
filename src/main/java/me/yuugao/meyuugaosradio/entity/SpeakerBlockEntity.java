@@ -63,8 +63,11 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
             Direction facing = this.world.getBlockState(this.pos).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = this.world.getBlockState(this.pos).get(AbstractEnergyBlock.DIRECTION);
-            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
-            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection, this.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                    direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                    direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection,
+                    this.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
         }
         markDirty();
     }

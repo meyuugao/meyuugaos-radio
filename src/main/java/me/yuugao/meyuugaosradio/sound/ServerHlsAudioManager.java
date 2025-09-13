@@ -62,11 +62,12 @@ public class ServerHlsAudioManager {
     public static class ServerAudioInstance {
         public final String streamUrl;
         public final Object worldRegistryKey;
-        private final Map<BlockPos, ServerSoundSource> soundSources = new ConcurrentHashMap<>();
+        private final Map<BlockPos, ServerSoundSource> soundSources;
 
         public ServerAudioInstance(String streamUrl, Object worldRegistryKey) {
             this.streamUrl = streamUrl;
             this.worldRegistryKey = worldRegistryKey;
+            this.soundSources = new ConcurrentHashMap<>();
         }
 
         public void addSoundSource(BlockPos pos, Vec3d direction, float volumeMultiplier, float maxRange, Object worldRegistryKey) {

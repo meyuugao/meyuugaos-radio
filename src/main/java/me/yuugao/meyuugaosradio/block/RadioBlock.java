@@ -64,9 +64,11 @@ public class RadioBlock extends AbstractEnergyBlock {
             if (!streamUrl.isEmpty()) {
                 radioBlockEntity.setStreamUrl(streamUrl);
             }
+            
             String currentStreamUrl = radioBlockEntity.getStreamUrl();
             if (!currentStreamUrl.isEmpty()) {
-                ServerHlsAudioManager.addSoundSource(currentStreamUrl, pos, this.getVecDirection(world, pos), radioBlockEntity.getVolume() * RADIO_VOLUME_MULTIPLIER, RADIO_MAX_RANGE, world.getRegistryKey());
+                ServerHlsAudioManager.addSoundSource(currentStreamUrl, pos, this.getVecDirection(world, pos),
+                        radioBlockEntity.getVolume() * RADIO_VOLUME_MULTIPLIER, RADIO_MAX_RANGE, world.getRegistryKey());
                 List.copyOf(radioBlockEntity.getSpeakers()).forEach(speakerPos -> {
                     if (world.getBlockEntity(speakerPos) instanceof SpeakerBlockEntity speakerBlockEntity && world.getServer() != null) {
                         if (!radioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {

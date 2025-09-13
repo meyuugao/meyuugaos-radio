@@ -146,7 +146,8 @@ public class ServerNetworkManager {
 
         if (speakerBlockEntity.getRadioPos() == null) {
             if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar")
+                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
                 return;
             }
 
@@ -159,7 +160,8 @@ public class ServerNetworkManager {
                 speakerBlockEntity.disconnectRadio();
                 activeRadioBlockEntity.disconnectSpeaker(speakerBlockEntity.getPos());
             } else {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected")
+                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
             }
         }
     }

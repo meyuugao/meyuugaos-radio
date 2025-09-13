@@ -100,7 +100,8 @@ public class RemoteControllerItem extends Item {
 
     private void sendNotEnoughEnergyMessage(PlayerEntity user) {
         if (user instanceof ServerPlayerEntity serverPlayerEntity) {
-            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity, Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
+            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity,
+                    Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
         }
     }
 

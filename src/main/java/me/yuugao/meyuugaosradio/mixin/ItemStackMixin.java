@@ -43,9 +43,11 @@ public abstract class ItemStackMixin {
                     if (context.getPlayer().isSneaking()) {
                         abstractEnergyBlock.dropBlock(context.getWorld(), context.getBlockPos());
                         abstractEnergyBlock.globalUnbind(context.getPlayer(), context.getWorld(), context.getBlockPos());
-                        context.getWorld().playSound(null, context.getBlockPos(), Radio.BLOCK_DISMANTLE, SoundCategory.BLOCKS, 0.5f, 1f);
+                        context.getWorld().playSound(null, context.getBlockPos(), Radio.BLOCK_DISMANTLE,
+                                SoundCategory.BLOCKS, 0.5f, 1f);
                     } else {
-                        abstractEnergyBlock.rotateBlock(context.getWorld(), context.getBlockPos(), context.getWorld().getBlockState(context.getBlockPos()));
+                        abstractEnergyBlock.rotateBlock(context.getWorld(), context.getBlockPos(),
+                                context.getWorld().getBlockState(context.getBlockPos()));
                         updateSoundSourceDirection(context);
                     }
                     cir.setReturnValue(ActionResult.SUCCESS);
@@ -55,7 +57,8 @@ public abstract class ItemStackMixin {
                         BlockEntity blockEntity = context.getWorld().getBlockEntity(context.getBlockPos());
                         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
                             EnergyItemHandler energyItemHandler = remoteControllerItem.getEnergyItemHandler();
-                            long toTransfer = Math.min(energyItemHandler.getCapacity(itemStack) - energyItemHandler.getEnergy(itemStack), radioBlockEntity.getAmount());
+                            long toTransfer = Math.min(energyItemHandler.getCapacity(itemStack) -
+                                    energyItemHandler.getEnergy(itemStack), radioBlockEntity.getAmount());
                             radioBlockEntity.setEnergy(radioBlockEntity.getAmount() - toTransfer);
                             energyItemHandler.addEnergy(itemStack, toTransfer);
                         }
@@ -83,7 +86,11 @@ public abstract class ItemStackMixin {
         if (streamUrl != null) {
             Direction facing = context.getWorld().getBlockState(context.getBlockPos()).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = context.getWorld().getBlockState(context.getBlockPos()).get(AbstractEnergyBlock.DIRECTION);
-            ServerHlsAudioManager.updateSoundSourceDirection(streamUrl, context.getBlockPos(), new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize(), context.getWorld().getRegistryKey());
+            ServerHlsAudioManager.updateSoundSourceDirection(streamUrl, context.getBlockPos(), new Vec3d(
+                            direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                            direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                            direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize(),
+                    context.getWorld().getRegistryKey());
         }
     }
 }
