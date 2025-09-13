@@ -10,6 +10,8 @@ import net.minecraft.util.Formatting;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.function.Consumer;
+
 public class EnergyItemHandler {
     private final long defaultCapacity;
     private final int defaultUsage;
@@ -17,6 +19,15 @@ public class EnergyItemHandler {
     public EnergyItemHandler(long defaultCapacity, int defaultUsage) {
         this.defaultCapacity = defaultCapacity;
         this.defaultUsage = defaultUsage;
+    }
+
+    public void appendTooltip(ItemStack stack, Consumer<Text> textConsumer) {
+        long energy = getEnergy(stack);
+        long capacity = getCapacity(stack);
+        int usage = getUsage(stack);
+
+        textConsumer.accept(createEnergyText(energy, capacity));
+        textConsumer.accept(createUsageText(usage));
     }
 
     public void setupEnergyComponents(ItemStack stack) {

@@ -141,7 +141,7 @@ public class Radio implements ModInitializer {
         EnergyStorage.ITEM.registerForItems((stack, context) -> {
             if (!(stack.getItem() instanceof RemoteControllerItem remoteItem)) return null;
 
-            EnergyItemHandler energyHandler = remoteItem.getEnergyHandler();
+            EnergyItemHandler energyHandler = remoteItem.getEnergyItemHandler();
 
             return new EnergyStorage() {
                 @Override

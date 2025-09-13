@@ -25,7 +25,7 @@ import net.minecraft.world.World;
 import java.util.function.Consumer;
 
 public class RemoteControllerItem extends Item {
-    private final EnergyItemHandler energyHandler;
+    private final EnergyItemHandler energyItemHandler;
 
     @FunctionalInterface
     private interface BlockInteractionHandler {
@@ -35,13 +35,13 @@ public class RemoteControllerItem extends Item {
     public RemoteControllerItem(Settings settings, long capacity, int usage) {
         super(settings);
 
-        this.energyHandler = new EnergyItemHandler(capacity, usage);
+        this.energyItemHandler = new EnergyItemHandler(capacity, usage);
     }
 
     @Override
     public ItemStack getDefaultStack() {
         ItemStack stack = super.getDefaultStack();
-        energyHandler.setupEnergyComponents(stack);
+        energyItemHandler.setupEnergyComponents(stack);
 
         return stack;
     }
@@ -50,12 +50,7 @@ public class RemoteControllerItem extends Item {
     public void appendTooltip(ItemStack stack, TooltipContext context,
                               TooltipDisplayComponent displayComponent,
                               Consumer<Text> textConsumer, TooltipType type) {
-        long energy = energyHandler.getEnergy(stack);
-        long capacity = energyHandler.getCapacity(stack);
-        int usage = energyHandler.getUsage(stack);
-
-        textConsumer.accept(energyHandler.createEnergyText(energy, capacity));
-        textConsumer.accept(energyHandler.createUsageText(usage));
+        energyItemHandler.appendTooltip(stack, textConsumer);
     }
 
     @Override
@@ -77,13 +72,13 @@ public class RemoteControllerItem extends Item {
         if (!world.isClient() && !user.isSneaking() && user instanceof ServerPlayerEntity serverPlayerEntity) {
             ItemStack stack = user.getMainHandStack();
 
-            if (energyHandler.getEnergy(stack) < energyHandler.getUsage(stack)) {
+            if (energyItemHandler.getEnergy(stack) < energyItemHandler.getUsage(stack)) {
                 sendNotEnoughEnergyMessage(user);
 
                 return;
             }
 
-            energyHandler.removeEnergy(stack, energyHandler.getUsage(stack));
+            energyItemHandler.removeEnergy(stack, energyItemHandler.getUsage(stack));
             BlockHitResult hit = raycastFromPlayer(user);
 
             if (hit.getType() == HitResult.Type.BLOCK) {
@@ -128,7 +123,7 @@ public class RemoteControllerItem extends Item {
         return 0f;
     }
 
-    public EnergyItemHandler getEnergyHandler() {
-        return energyHandler;
+    public EnergyItemHandler getEnergyItemHandler() {
+        return energyItemHandler;
     }
 }

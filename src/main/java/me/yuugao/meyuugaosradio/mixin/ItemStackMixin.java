@@ -54,7 +54,7 @@ public abstract class ItemStackMixin {
                     if (block instanceof RadioBlock && context.getPlayer().isSneaking()) {
                         BlockEntity blockEntity = context.getWorld().getBlockEntity(context.getBlockPos());
                         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
-                            EnergyItemHandler energyItemHandler = remoteControllerItem.getEnergyHandler();
+                            EnergyItemHandler energyItemHandler = remoteControllerItem.getEnergyItemHandler();
                             long toTransfer = Math.min(energyItemHandler.getCapacity(itemStack) - energyItemHandler.getEnergy(itemStack), radioBlockEntity.getAmount());
                             radioBlockEntity.setEnergy(radioBlockEntity.getAmount() - toTransfer);
                             energyItemHandler.addEnergy(itemStack, toTransfer);
