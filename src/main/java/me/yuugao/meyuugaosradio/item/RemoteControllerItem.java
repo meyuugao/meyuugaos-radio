@@ -39,6 +39,7 @@ public class RemoteControllerItem extends Item {
 
     public RemoteControllerItem(Settings settings, long capacity, int usage) {
         super(settings);
+
         this.capacity = capacity;
         this.usage = usage;
     }
@@ -47,6 +48,7 @@ public class RemoteControllerItem extends Item {
     public ItemStack getDefaultStack() {
         ItemStack stack = super.getDefaultStack();
         setupEnergyComponents(stack);
+
         return stack;
     }
 
@@ -73,6 +75,7 @@ public class RemoteControllerItem extends Item {
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         onRightClick(world, user);
+
         return ActionResult.SUCCESS;
     }
 
@@ -90,6 +93,7 @@ public class RemoteControllerItem extends Item {
 
             if (getEnergy(stack) < usage) {
                 sendNotEnoughEnergyMessage(user);
+
                 return;
             }
 
@@ -102,6 +106,7 @@ public class RemoteControllerItem extends Item {
 
                 if (state.getBlock() instanceof AbstractEnergyBlock abstractEnergyBlock) {
                     interactionHandler.handle(abstractEnergyBlock, world, pos, serverPlayerEntity);
+
                     return;
                 }
             }
@@ -139,12 +144,14 @@ public class RemoteControllerItem extends Item {
 
     public long getCapacity(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+
         return nbtComponent != null ? nbtComponent.copyNbt().getLong("Capacity").orElse(capacity) : capacity;
     }
 
     public long getEnergy(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-        return nbtComponent != null ? nbtComponent.copyNbt().getLong("Energy").orElse(0L) : 0;
+
+        return nbtComponent != null ? nbtComponent.copyNbt().getLong("Energy").orElse(0L) : 0L;
     }
 
     public void setEnergy(ItemStack stack, long energy) {
