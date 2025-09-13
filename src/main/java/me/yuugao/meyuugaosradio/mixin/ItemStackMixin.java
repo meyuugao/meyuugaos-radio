@@ -45,7 +45,7 @@ public abstract class ItemStackMixin {
                         context.getWorld().playSound(null, context.getBlockPos(), Radio.BLOCK_DISMANTLE, SoundCategory.BLOCKS, 0.5f, 1f);
                     } else {
                         abstractEnergyBlock.rotateBlock(context.getWorld(), context.getBlockPos(), context.getWorld().getBlockState(context.getBlockPos()));
-                        tryUpdateSoundSourceDirection(context);
+                        updateSoundSourceDirection(context);
                     }
                     cir.setReturnValue(ActionResult.SUCCESS);
                 } else if (itemStack.isOf(Registries.ITEM.get(MEYUUGAOSRADIO_REMOTE_CONTROLLER_ID))) {
@@ -65,7 +65,7 @@ public abstract class ItemStackMixin {
     }
 
     @Unique
-    private void tryUpdateSoundSourceDirection(ItemUsageContext context) {
+    private void updateSoundSourceDirection(ItemUsageContext context) {
         String streamUrl = null;
         BlockEntity blockEntity = context.getWorld().getBlockEntity(context.getBlockPos());
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {

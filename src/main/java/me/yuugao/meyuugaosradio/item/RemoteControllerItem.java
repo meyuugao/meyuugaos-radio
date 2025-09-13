@@ -26,7 +26,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class RemoteControllerItem extends Item {
@@ -60,8 +59,6 @@ public class RemoteControllerItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
-        super.appendTooltip(stack, context, displayComponent, textConsumer, type);
-
         long energy = getEnergy(stack);
         long capacity = getCapacity(stack);
 
@@ -83,7 +80,7 @@ public class RemoteControllerItem extends Item {
         handleInteraction(world, user, AbstractEnergyBlock::use, false);
     }
 
-    private void onRightClick(World world, PlayerEntity user) {
+    public void onRightClick(World world, PlayerEntity user) {
         handleInteraction(world, user, AbstractEnergyBlock::glow, true);
     }
 

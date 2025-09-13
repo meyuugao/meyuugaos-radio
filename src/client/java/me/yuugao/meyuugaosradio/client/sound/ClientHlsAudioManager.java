@@ -1,23 +1,29 @@
 package me.yuugao.meyuugaosradio.client.sound;
 
+import static me.yuugao.meyuugaosradio.Constants.LOGGER;
+
+
 import me.yuugao.meyuugaosradio.client.config.ClientModConfigManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 
 import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
     private static final Map<String, AtomicBoolean> startingStreams = new ConcurrentHashMap<>();
 
@@ -139,79 +145,62 @@ public class ClientHlsAudioManager {
                 final long bytesPerSecond = (long) sampleRate * channels * 2;
 
                 readThread = new Thread(() -> {
-                    int restartAttempts = 0;
+                    final AtomicInteger restartAttempts = new AtomicInteger(0);
                     final int maxRestartAttempts = 3;
 
-                    while (!stopRequested && restartAttempts < maxRestartAttempts) {
-                        try {
-                            String[] ffmpegCommand = {
-                                    "ffmpeg",
-                                    "-v", "warning",
-                                    "-i", streamUrl,
-                                    "-vn",
-                                    "-af", "acompressor=threshold=-20dB:ratio=4:attack=20:release=200,volume=5.0",
-                                    "-c:a", "pcm_s16le",
-                                    "-f", "s16le",
-                                    "-ar", String.valueOf(sampleRate),
-                                    "-ac", String.valueOf(channels),
-                                    "-reconnect", "1",
-                                    "-reconnect_streamed", "1",
-                                    "-reconnect_delay_max", "2",
-                                    "-reconnect_on_network_error", "1",
-                                    "-fflags", "+discardcorrupt+genpts+igndts",
-                                    "-avoid_negative_ts", "make_zero",
-                                    "-max_delay", "500000",
-                                    "-bufsize", String.valueOf(sampleRate * 2),
-                                    "-threads", "1",
-                                    "-nostats",
-                                    "-use_wallclock_as_timestamps", "1",
-                                    "pipe:1"
-                            };
+                    Runnable connectTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (stopRequested || restartAttempts.get() >= maxRestartAttempts) {
+                                return;
+                            }
 
-                            ProcessBuilder pb = new ProcessBuilder(ffmpegCommand);
-                            pb.redirectErrorStream(true);
-                            ffmpegProcess = pb.start();
+                            try {
+                                ProcessBuilder pb = getProcessBuilder();
+                                ffmpegProcess = pb.start();
 
-                            InputStream audioStream = ffmpegProcess.getInputStream();
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
+                                InputStream audioStream = ffmpegProcess.getInputStream();
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
 
-                            while (!stopRequested && (bytesRead = audioStream.read(buffer)) != -1) {
-                                if (bytesRead > 0) {
-                                    int alignedBytes = (bytesRead / frameSize) * frameSize;
-                                    if (alignedBytes > 0) {
-                                        byte[] audioData = new byte[alignedBytes];
-                                        System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
+                                while (!stopRequested && (bytesRead = audioStream.read(buffer)) != -1) {
+                                    if (bytesRead > 0) {
+                                        int alignedBytes = (bytesRead / frameSize) * frameSize;
+                                        if (alignedBytes > 0) {
+                                            byte[] audioData = new byte[alignedBytes];
+                                            System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
 
-                                        audioQueue.offer(audioData, 100, TimeUnit.MILLISECONDS);
+                                            if (!audioQueue.offer(audioData, 100, TimeUnit.MILLISECONDS)) {
+                                                LOGGER.info("Audio queue is full, skipping...");
+                                            }
+                                        }
                                     }
                                 }
-                            }
 
-                            if (!stopRequested) {
-                                restartAttempts++;
-                                Thread.sleep(2000);
-                            }
-                        } catch (Exception e) {
-                            if (!stopRequested) {
-                                restartAttempts++;
-                                try {
-                                    Thread.sleep(2000);
-                                } catch (InterruptedException ie) {
-                                    Thread.currentThread().interrupt();
-                                    break;
+                                if (!stopRequested) {
+                                    restartAttempts.incrementAndGet();
+                                    scheduler.schedule(this, 2, TimeUnit.SECONDS);
+                                }
+
+                                restartAttempts.set(0);
+                            } catch (Exception e) {
+                                if (!stopRequested) {
+                                    int attempts = restartAttempts.incrementAndGet();
+                                    if (attempts < maxRestartAttempts) {
+                                        scheduler.schedule(this, 2, TimeUnit.SECONDS);
+                                    } else {
+                                        stopStream();
+                                    }
+                                }
+                            } finally {
+                                if (ffmpegProcess != null) {
+                                    ffmpegProcess.destroy();
                                 }
                             }
-                        } finally {
-                            if (ffmpegProcess != null) {
-                                ffmpegProcess.destroy();
-                            }
                         }
-                    }
+                    };
 
-                    if (restartAttempts >= maxRestartAttempts && !stopRequested) {
-                        stopStream();
-                    }
+                    scheduler.execute(connectTask);
                 });
 
                 playbackThread = new Thread(() -> {
@@ -242,10 +231,8 @@ public class ClientHlsAudioManager {
                             if (audioData != null && audioData.length > 0) {
                                 long currentTime = System.nanoTime();
                                 if (currentTime < nextWriteTime) {
-                                    long sleepTime = (nextWriteTime - currentTime) / 1000000;
-                                    if (sleepTime > 0) {
-                                        Thread.sleep(sleepTime);
-                                    }
+                                    long sleepNanos = nextWriteTime - currentTime;
+                                    LockSupport.parkNanos(sleepNanos);
                                 }
 
                                 audioLine.write(audioData, 0, audioData.length);
@@ -277,6 +264,36 @@ public class ClientHlsAudioManager {
             } finally {
                 isStarting.set(false);
             }
+        }
+
+        private @NotNull ProcessBuilder getProcessBuilder() {
+            String[] ffmpegCommand = {
+                    "ffmpeg",
+                    "-v", "warning",
+                    "-i", streamUrl,
+                    "-vn",
+                    "-af", "acompressor=threshold=-20dB:ratio=4:attack=20:release=200,volume=5.0",
+                    "-c:a", "pcm_s16le",
+                    "-f", "s16le",
+                    "-ar", String.valueOf(sampleRate),
+                    "-ac", String.valueOf(channels),
+                    "-reconnect", "1",
+                    "-reconnect_streamed", "1",
+                    "-reconnect_delay_max", "2",
+                    "-reconnect_on_network_error", "1",
+                    "-fflags", "+discardcorrupt+genpts+igndts",
+                    "-avoid_negative_ts", "make_zero",
+                    "-max_delay", "500000",
+                    "-bufsize", String.valueOf(sampleRate * 2),
+                    "-threads", "1",
+                    "-nostats",
+                    "-use_wallclock_as_timestamps", "1",
+                    "pipe:1"
+            };
+
+            ProcessBuilder pb = new ProcessBuilder(ffmpegCommand);
+            pb.redirectErrorStream(true);
+            return pb;
         }
 
         public void stopStream() {
@@ -345,9 +362,22 @@ public class ClientHlsAudioManager {
     public static void cleanup() {
         stopAudioInstances();
         startingStreams.clear();
+        shutdownScheduler();
     }
 
     public static void stopAudioInstances() {
         audioInstances.values().forEach(ClientAudioInstance::stopStream);
+    }
+
+    private static void shutdownScheduler() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

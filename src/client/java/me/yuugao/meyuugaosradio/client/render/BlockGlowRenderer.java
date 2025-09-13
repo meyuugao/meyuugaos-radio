@@ -1,7 +1,9 @@
 package me.yuugao.meyuugaosradio.client.render;
 
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,6 +27,7 @@ public class BlockGlowRenderer {
                     .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build(),
             RenderLayer.MultiPhaseParameters.builder().build(false)
     );
+
     private static final Map<BlockPos, GlowInfo> blocksToRender = new HashMap<>();
     private static boolean enabled = false;
 

@@ -47,16 +47,17 @@ public class RadioBlock extends AbstractEnergyBlock {
 
     @Override
     public void glow(World world, BlockPos pos, ServerPlayerEntity player) {
-        if (!world.isClient()) {
-            RadioBlockEntity radioBlockEntity = (RadioBlockEntity) world.getBlockEntity(pos);
-            if (radioBlockEntity != null) {
-                ServerNetworkManager.sendServerRadioPacket(player, radioBlockEntity);
-            }
+        if (world.isClient()) return;
+
+        RadioBlockEntity radioBlockEntity = (RadioBlockEntity) world.getBlockEntity(pos);
+        if (radioBlockEntity != null) {
+            ServerNetworkManager.sendServerRadioPacket(player, radioBlockEntity);
         }
     }
 
     public void onEnabled(World world, BlockPos pos, BlockState state, String streamUrl) {
         super.onEnabled(world, pos, state);
+
         if (world.getBlockEntity(pos) instanceof RadioBlockEntity radioBlockEntity) {
             if (!streamUrl.isEmpty()) {
                 radioBlockEntity.setStreamUrl(streamUrl);
@@ -89,6 +90,7 @@ public class RadioBlock extends AbstractEnergyBlock {
     @Override
     public void onDisabled(World world, BlockPos pos, BlockState state) {
         super.onDisabled(world, pos, state);
+
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
             String currentStreamUrl = radioBlockEntity.getStreamUrl();
@@ -104,6 +106,7 @@ public class RadioBlock extends AbstractEnergyBlock {
     @Override
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         super.onBreak(world, pos, state, player);
+
         this.globalUnbind(player, world, pos);
         return state;
     }

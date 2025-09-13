@@ -37,24 +37,24 @@ import java.util.function.Function;
 import team.reborn.energy.api.EnergyStorage;
 
 public class Radio implements ModInitializer {
-    private static Block RADIO_BLOCK;
-    private static Block SPEAKER_BLOCK;
+    private Block RADIO_BLOCK;
+    private Block SPEAKER_BLOCK;
 
-    private static Item RADIO_BLOCK_ITEM;
-    private static Item SPEAKER_BLOCK_ITEM;
+    private Item RADIO_BLOCK_ITEM;
+    private Item SPEAKER_BLOCK_ITEM;
 
-    private static RemoteControllerItem REMOTE_CONTROLLER_ITEM;
-    private static Item ELECTRONIC_CIRCUIT_ITEM;
-    private static Item ANTENNA_ITEM;
-    private static Item BATTERY_ITEM;
-    private static Item SMALL_BATTERY_ITEM;
-    private static Item SMALL_MEMBRANE_ITEM;
-    private static Item MEMBRANE_ITEM;
+    private RemoteControllerItem REMOTE_CONTROLLER_ITEM;
+    private Item ELECTRONIC_CIRCUIT_ITEM;
+    private Item ANTENNA_ITEM;
+    private Item BATTERY_ITEM;
+    private Item SMALL_BATTERY_ITEM;
+    private Item SMALL_MEMBRANE_ITEM;
+    private Item MEMBRANE_ITEM;
 
     public static BlockEntityType<RadioBlockEntity> RADIO_BLOCK_ENTITY;
     public static BlockEntityType<SpeakerBlockEntity> SPEAKER_BLOCK_ENTITY;
 
-    public static final SoundEvent BLOCK_DISMANTLE = registerSound(BLOCK_DISMANTLE_SOUND_ID);
+    public static SoundEvent BLOCK_DISMANTLE;
 
     public static final GameRules.Key<GameRules.IntRule> RADIO_CONNECT_RADIUS =
             GameRuleRegistry.register("meyuugaosradioConnectRadius", GameRules.Category.MISC, GameRuleFactory.createIntRule(50));
@@ -66,6 +66,7 @@ public class Radio implements ModInitializer {
         registerBlockEntities();
         registerItemGroups();
         registerEnergyStorages();
+        registerSounds();
         ServerNetworkManager.initialize();
         ServerEventsManager.initialize();
     }
@@ -83,12 +84,6 @@ public class Radio implements ModInitializer {
                 new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
     }
 
-    private static Block registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
-        final Identifier identifier = Identifier.of("meyuugaosradio", path);
-        final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
-        return Blocks.register(registryKey, factory, settings);
-    }
-
     private void registerItems() {
         REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, settings -> new RemoteControllerItem(settings, REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE), new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
         ELECTRONIC_CIRCUIT_ITEM = registerItem(ELECTRONIC_CIRCUIT_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
@@ -99,7 +94,13 @@ public class Radio implements ModInitializer {
         MEMBRANE_ITEM = registerItem(MEMBRANE_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
     }
 
-    public static Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
+    private Block registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
+        final Identifier identifier = Identifier.of("meyuugaosradio", path);
+        final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
+        return Blocks.register(registryKey, factory, settings);
+    }
+
+    public Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
         RegistryKey<Item> registryKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of("meyuugaosradio", path));
         Item item = factory.apply(settings.registryKey(registryKey));
         Registry.register(Registries.ITEM, registryKey, item);
@@ -168,7 +169,11 @@ public class Radio implements ModInitializer {
         }, REMOTE_CONTROLLER_ITEM);
     }
 
-    private static SoundEvent registerSound(String name) {
+    private void registerSounds() {
+        BLOCK_DISMANTLE = registerSound(BLOCK_DISMANTLE_SOUND_ID);
+    }
+
+    private SoundEvent registerSound(String name) {
         Identifier id = Identifier.of("meyuugaosradio", name);
         return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
     }

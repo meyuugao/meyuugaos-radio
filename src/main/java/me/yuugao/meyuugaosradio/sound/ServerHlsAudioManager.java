@@ -15,6 +15,9 @@ public class ServerHlsAudioManager {
     private static final Map<String, ServerAudioInstance> audioInstances = new ConcurrentHashMap<>();
     private static final Map<UUID, WorldPlayerInfo> allPlayers = new ConcurrentHashMap<>();
 
+    private record WorldPlayerInfo(ServerPlayerEntity player, Object worldRegistryKey) {
+    }
+
     public static void onEndServerTick(List<ServerPlayerEntity> worldPlayers) {
         updatePlayersList(worldPlayers);
 
@@ -37,16 +40,6 @@ public class ServerHlsAudioManager {
     private static void updatePlayersList(List<ServerPlayerEntity> currentWorldPlayers) {
         for (ServerPlayerEntity player : currentWorldPlayers) {
             allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getWorld().getRegistryKey()));
-        }
-    }
-
-    private static class WorldPlayerInfo {
-        public final ServerPlayerEntity player;
-        public final Object worldRegistryKey;
-
-        public WorldPlayerInfo(ServerPlayerEntity player, Object worldRegistryKey) {
-            this.player = player;
-            this.worldRegistryKey = worldRegistryKey;
         }
     }
 

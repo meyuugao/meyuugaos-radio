@@ -140,7 +140,7 @@ public class ServerNetworkManager {
                 activeRadioBlockEntity = (RadioBlockEntity) world.getBlockEntity(blockPos);
             }
         }
-        if (speakerBlockEntity == null || activeRadioBlockEntity == null) return;
+        if (speakerBlockEntity == null || activeRadioBlockEntity == null || world.getServer() == null) return;
 
         if (speakerBlockEntity.getRadioPos() == null) {
             if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {

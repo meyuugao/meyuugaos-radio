@@ -5,7 +5,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
@@ -13,7 +12,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class EnergyBlockItem extends BlockItem {
@@ -48,13 +46,11 @@ public class EnergyBlockItem extends BlockItem {
             setupEnergyComponents(stack);
             nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         }
-        return nbtComponent.copyNbt();
+        return nbtComponent != null ? nbtComponent.copyNbt() : new NbtCompound();
     }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
-        super.appendTooltip(stack, context, displayComponent, textConsumer, type);
-
         NbtCompound energyData = getOrCreateEnergyData(stack);
         long energy = energyData.getLong("Energy").orElse(0L);
         long capacity = energyData.getLong("Capacity").orElse(this.capacity);

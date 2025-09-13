@@ -50,7 +50,7 @@ public class ClientNetworkManager {
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerPlayerSendMessagePayload.ID, (payload, context) ->
                 context.client().execute(() -> {
-                    if (MinecraftClient.getInstance().player != null) {
+                    if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null) {
                         Text text = Text.Serialization.fromJson(payload.textJson(), MinecraftClient.getInstance().getNetworkHandler().getRegistryManager());
                         MinecraftClient.getInstance().player.sendMessage(text, payload.overlay());
                     }

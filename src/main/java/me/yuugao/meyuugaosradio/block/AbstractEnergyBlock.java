@@ -32,6 +32,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
 
     protected AbstractEnergyBlock(Settings settings) {
         super(settings.nonOpaque().strength(2.0f));
+
         this.setDefaultState(stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(DIRECTION, DirectionEnum.SIDE)
@@ -79,9 +80,9 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
 
         BlockEntity be = world.getBlockEntity(pos);
         if (be instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
-            NbtCompound nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA).getNbt();
+            NbtComponent nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
             if (nbt != null) {
-                abstractEnergyBlockEntity.readNbt(nbt, world.getRegistryManager());
+                abstractEnergyBlockEntity.readNbt(nbt.copyNbt(), world.getRegistryManager());
             }
         }
     }

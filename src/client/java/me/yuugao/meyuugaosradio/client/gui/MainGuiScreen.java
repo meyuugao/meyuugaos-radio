@@ -3,17 +3,23 @@ package me.yuugao.meyuugaosradio.client.gui;
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
 
+import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
+import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
+
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import org.lwjgl.glfw.GLFW;
 
-public abstract class VolumeControlGuiScreen extends Screen {
+public abstract class MainGuiScreen extends Screen {
     protected final BlockPos pos;
+    protected long currentTime;
     protected int x;
     protected int y;
     protected float volume;
@@ -24,24 +30,9 @@ public abstract class VolumeControlGuiScreen extends Screen {
     protected boolean volumeSliderDragging = false;
     protected int dragOffsetY;
 
-    protected abstract int getGuiWidth();
-
-    protected abstract int getGuiHeight();
-
-    protected abstract int getVolumeSliderTrackX();
-
-    protected abstract int getVolumeSliderTrackY();
-
-    protected abstract int getVolumeTextFieldX();
-
-    protected abstract int getVolumeTextFieldY();
-
-    protected abstract float getVolumeMultiplier();
-
-    protected abstract void sendVolumeUpdatePacket(float volume);
-
-    protected VolumeControlGuiScreen(BlockPos pos, float volume) {
+    protected MainGuiScreen(BlockPos pos, float volume) {
         super(Text.empty());
+
         this.pos = pos;
         this.volume = volume;
     }
@@ -49,6 +40,7 @@ public abstract class VolumeControlGuiScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+
         x = (width - getGuiWidth()) / 2;
         y = (height - getGuiHeight()) / 2;
         volumeLastCursorTime = System.currentTimeMillis();
@@ -107,8 +99,10 @@ public abstract class VolumeControlGuiScreen extends Screen {
                 volume = newVolume;
                 sendVolumeUpdatePacket(volume);
             }
+
             return true;
         }
+
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
@@ -119,6 +113,7 @@ public abstract class VolumeControlGuiScreen extends Screen {
 
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 volumeTextFieldFocused = false;
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
                 if (volumeCursorPosition > 0) {
@@ -126,28 +121,34 @@ public abstract class VolumeControlGuiScreen extends Screen {
                     volumeCursorPosition--;
                     updateVolumeFromText(newText);
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 if (volumeCursorPosition < volumeText.length()) {
                     String newText = volumeText.substring(0, volumeCursorPosition) + volumeText.substring(volumeCursorPosition + 1);
                     updateVolumeFromText(newText);
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
                 if (volumeCursorPosition > 0) {
                     volumeCursorPosition--;
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
                 if (volumeCursorPosition < volumeText.length()) {
                     volumeCursorPosition++;
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_HOME) {
                 volumeCursorPosition = 0;
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_END) {
                 volumeCursorPosition = volumeText.length();
+
                 return true;
             }
         }
@@ -173,13 +174,34 @@ public abstract class VolumeControlGuiScreen extends Screen {
                 if (newText.length() <= 3) {
                     updateVolumeFromText(newText);
                 }
+
                 return true;
             }
         }
+
         return super.charTyped(chr, modifiers);
     }
 
-    protected void renderVolumeControls(DrawContext context, TextRenderer textRenderer) {
+    public void render(DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY, float delta) {
+        if (MinecraftClient.getInstance().world == null) return;
+
+        this.renderBackground(context, mouseX, mouseY, delta);
+
+        currentTime = System.currentTimeMillis();
+        if (currentTime - volumeLastCursorTime > 500) {
+            volumeCursorVisible = !volumeCursorVisible;
+            volumeLastCursorTime = currentTime;
+        }
+
+        context.drawTexture(RenderLayer::getGuiTextured, getGuiTexture(), x, y, 0, 0, getGuiWidth(), getGuiHeight(), getGuiWidth(), getGuiHeight());
+
+        context.drawTexture(RenderLayer::getGuiTextured,
+                MinecraftClient.getInstance().world.getBlockState(pos).get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED) ?
+                        getEnabledButtonTexture() : getDisabledButtonTexture(),
+                x + getButtonX(), y + getButtonY(),
+                0, 0,
+                getButtonWidth(), getButtonHeight(), getButtonWidth(), getButtonHeight());
+
         String volumeText = String.valueOf((int) (volume * 100));
         int volumeTextY = y + getVolumeTextFieldY() + 4;
 
@@ -242,4 +264,32 @@ public abstract class VolumeControlGuiScreen extends Screen {
     public boolean shouldPause() {
         return false;
     }
+
+    protected abstract Identifier getGuiTexture();
+
+    protected abstract int getGuiWidth();
+
+    protected abstract int getGuiHeight();
+
+    protected abstract Identifier getEnabledButtonTexture();
+
+    protected abstract Identifier getDisabledButtonTexture();
+
+    protected abstract int getButtonX();
+
+    protected abstract int getButtonY();
+
+    protected abstract int getButtonWidth();
+
+    protected abstract int getButtonHeight();
+
+    protected abstract int getVolumeSliderTrackX();
+
+    protected abstract int getVolumeSliderTrackY();
+
+    protected abstract int getVolumeTextFieldX();
+
+    protected abstract int getVolumeTextFieldY();
+
+    protected abstract void sendVolumeUpdatePacket(float volume);
 }

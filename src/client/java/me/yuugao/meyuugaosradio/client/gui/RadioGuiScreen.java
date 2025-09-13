@@ -4,19 +4,18 @@ import static me.yuugao.meyuugaosradio.Constants.RADIO_VOLUME_MULTIPLIER;
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
 
-import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
-import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import org.lwjgl.glfw.GLFW;
 
-public class RadioGuiScreen extends VolumeControlGuiScreen {
+public class RadioGuiScreen extends MainGuiScreen {
     private String streamUrl;
     private boolean textFieldFocused = false;
     private int cursorPosition = 0;
@@ -26,12 +25,14 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
 
     public RadioGuiScreen(BlockPos pos, String streamUrl, float volume) {
         super(pos, volume);
+
         this.streamUrl = streamUrl;
     }
 
     @Override
     protected void init() {
         super.init();
+
         lastCursorTime = System.currentTimeMillis();
     }
 
@@ -48,6 +49,7 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                     this.streamUrl = this.streamUrl.substring(0, this.streamUrl.length() - 9) + "aac_hifi.m3u8";
                 }
                 ClientNetworkManager.sendClientRadioStateSwitchPacket(this.pos, this.streamUrl);
+
                 return true;
             }
 
@@ -61,9 +63,11 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                 lastCursorTime = System.currentTimeMillis();
                 cursorPosition = streamUrl.length();
                 updateTextOffset();
+
                 return true;
             }
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -72,6 +76,7 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
         if (textFieldFocused) {
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 textFieldFocused = false;
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
                 if (!streamUrl.isEmpty() && cursorPosition > 0) {
@@ -85,17 +90,19 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                     }
                     updateTextOffset();
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 if (cursorPosition < streamUrl.length()) {
                     if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
-                        int wordEnd = findWordEndForDelete(cursorPosition);
+                        int wordEnd = findWordBoundary(cursorPosition);
                         streamUrl = streamUrl.substring(0, cursorPosition) + streamUrl.substring(wordEnd);
                     } else {
                         streamUrl = streamUrl.substring(0, cursorPosition) + streamUrl.substring(cursorPosition + 1);
                     }
                     updateTextOffset();
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
                 if (cursorPosition > 0) {
@@ -106,24 +113,28 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                     }
                     updateTextOffset();
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
                 if (cursorPosition < streamUrl.length()) {
                     if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
-                        cursorPosition = findNextWordStart(cursorPosition);
+                        cursorPosition = findWordBoundary(cursorPosition);
                     } else {
                         cursorPosition++;
                     }
                     updateTextOffset();
                 }
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_HOME) {
                 cursorPosition = 0;
                 updateTextOffset();
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_END) {
                 cursorPosition = streamUrl.length();
                 updateTextOffset();
+
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
                 String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
@@ -132,9 +143,11 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                     cursorPosition += clipboard.length();
                     updateTextOffset();
                 }
+
                 return true;
             }
         }
+
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -145,40 +158,22 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                 streamUrl = streamUrl.substring(0, cursorPosition) + chr + streamUrl.substring(cursorPosition);
                 cursorPosition++;
                 updateTextOffset();
+
                 return true;
             }
         }
+
         return super.charTyped(chr, modifiers);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        long currentTime = System.currentTimeMillis();
+        super.render(context, textRenderer, mouseX, mouseY, delta);
+
         if (currentTime - lastCursorTime > 500) {
             cursorVisible = !cursorVisible;
             lastCursorTime = currentTime;
         }
-        if (currentTime - volumeLastCursorTime > 500) {
-            volumeCursorVisible = !volumeCursorVisible;
-            volumeLastCursorTime = currentTime;
-        }
-
-        this.renderBackground(context, mouseX, mouseY, delta);
-
-        context.drawTexture(RenderLayer::getGuiTextured,
-                RADIO_GUI_TEXTURE,
-                x, y,
-                0, 0,
-                RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT,
-                RADIO_GUI_WIDTH, RADIO_GUI_HEIGHT);
-
-        context.drawTexture(RenderLayer::getGuiTextured,
-                MinecraftClient.getInstance().world.getBlockState(pos).get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED) ?
-                        RADIO_BUTTON_ENABLED_TEXTURE : RADIO_BUTTON_DISABLED_TEXTURE,
-                x + RADIO_BUTTON_X, y + RADIO_BUTTON_Y,
-                0, 0,
-                RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT,
-                RADIO_BUTTON_WIDTH, RADIO_BUTTON_HEIGHT);
 
         context.drawTexture(RenderLayer::getGuiTextured,
                 RADIO_MAIN_TEXT_FIELD_TEXTURE,
@@ -216,8 +211,6 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
         }
 
         context.disableScissor();
-
-        super.renderVolumeControls(context, textRenderer);
     }
 
     private int findWordStart(int position) {
@@ -234,15 +227,16 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                 i--;
             }
         }
+
         return i + 1;
     }
 
-    private int findNextWordStart(int position) {
+    private int findWordBoundary(int position) {
         if (position >= streamUrl.length()) return streamUrl.length();
         String text = streamUrl;
         int i = position;
 
-        if (i < text.length() && Character.isLetterOrDigit(text.charAt(i))) {
+        if (Character.isLetterOrDigit(text.charAt(i))) {
             while (i < text.length() && Character.isLetterOrDigit(text.charAt(i))) {
                 i++;
             }
@@ -251,23 +245,7 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
                 i++;
             }
         }
-        return i;
-    }
 
-    private int findWordEndForDelete(int position) {
-        if (position >= streamUrl.length()) return streamUrl.length();
-        String text = streamUrl;
-        int i = position;
-
-        if (i < text.length() && Character.isLetterOrDigit(text.charAt(i))) {
-            while (i < text.length() && Character.isLetterOrDigit(text.charAt(i))) {
-                i++;
-            }
-        } else {
-            while (i < text.length() && !Character.isLetterOrDigit(text.charAt(i))) {
-                i++;
-            }
-        }
         return i;
     }
 
@@ -285,6 +263,11 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
     }
 
     @Override
+    protected Identifier getGuiTexture() {
+        return RADIO_GUI_TEXTURE;
+    }
+
+    @Override
     protected int getGuiWidth() {
         return RADIO_GUI_WIDTH;
     }
@@ -292,6 +275,36 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
     @Override
     protected int getGuiHeight() {
         return RADIO_GUI_HEIGHT;
+    }
+
+    @Override
+    protected Identifier getEnabledButtonTexture() {
+        return RADIO_BUTTON_ENABLED_TEXTURE;
+    }
+
+    @Override
+    protected Identifier getDisabledButtonTexture() {
+        return RADIO_BUTTON_DISABLED_TEXTURE;
+    }
+
+    @Override
+    protected int getButtonX() {
+        return RADIO_BUTTON_X;
+    }
+
+    @Override
+    protected int getButtonY() {
+        return RADIO_BUTTON_Y;
+    }
+
+    @Override
+    protected int getButtonWidth() {
+        return RADIO_BUTTON_WIDTH;
+    }
+
+    @Override
+    protected int getButtonHeight() {
+        return RADIO_BUTTON_HEIGHT;
     }
 
     @Override
@@ -312,11 +325,6 @@ public class RadioGuiScreen extends VolumeControlGuiScreen {
     @Override
     protected int getVolumeTextFieldY() {
         return RADIO_VOLUME_TEXT_FIELD_Y;
-    }
-
-    @Override
-    protected float getVolumeMultiplier() {
-        return RADIO_VOLUME_MULTIPLIER;
     }
 
     @Override
