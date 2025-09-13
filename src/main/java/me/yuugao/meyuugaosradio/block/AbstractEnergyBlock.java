@@ -2,7 +2,6 @@ package me.yuugao.meyuugaosradio.block;
 
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -33,7 +32,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     public static final EnumProperty<EnergyStateEnum> ENERGY_STATE = EnumProperty.of("energy_state", EnergyStateEnum.class);
 
     protected AbstractEnergyBlock() {
-        super(FabricBlockSettings.create().nonOpaque().strength(2.0f));
+        super(Settings.create().nonOpaque().strength(2.0f));
         this.setDefaultState(stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(DIRECTION, DirectionEnum.SIDE)
