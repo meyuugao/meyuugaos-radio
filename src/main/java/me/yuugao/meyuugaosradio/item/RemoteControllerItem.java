@@ -91,6 +91,7 @@ public class RemoteControllerItem extends Item {
                     return;
                 }
             }
+
             if (shouldResetRender) {
                 ServerNetworkManager.sendServerGlowClearPacket(serverPlayerEntity);
             }
