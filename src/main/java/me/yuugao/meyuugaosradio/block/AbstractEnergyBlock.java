@@ -53,8 +53,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         Direction side = ctx.getSide();
         DirectionEnum direction = side == Direction.UP ? DirectionEnum.UP :
-                side == Direction.DOWN ? DirectionEnum.DOWN :
-                        DirectionEnum.SIDE;
+                side == Direction.DOWN ? DirectionEnum.DOWN : DirectionEnum.SIDE;
 
         return getDefaultState()
                 .with(FACING, ctx.getHorizontalPlayerFacing().getOpposite())
