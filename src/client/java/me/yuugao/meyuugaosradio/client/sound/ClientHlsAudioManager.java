@@ -1,6 +1,6 @@
 package me.yuugao.meyuugaosradio.client.sound;
 
-import static me.yuugao.meyuugaosradio.Constants.LOGGER;
+import static me.yuugao.meyuugaosradio.Constants.CLIENT_LOGGER;
 
 
 import me.yuugao.meyuugaosradio.client.config.ClientModConfigManager;
@@ -171,7 +171,7 @@ public class ClientHlsAudioManager {
                                             System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
 
                                             if (!audioQueue.offer(audioData, 100, TimeUnit.MILLISECONDS)) {
-                                                LOGGER.info("Audio queue is full, skipping...");
+                                                CLIENT_LOGGER.info("Audio queue is full, skipping...");
                                             }
                                         }
                                     }
@@ -187,8 +187,14 @@ public class ClientHlsAudioManager {
                                 if (!stopRequested) {
                                     int attempts = restartAttempts.incrementAndGet();
                                     if (attempts < maxRestartAttempts) {
+                                        CLIENT_LOGGER.info("FFMPEG connection failed, attempt {}/{}. Retrying in 2s...",
+                                                attempts, maxRestartAttempts);
+                                        CLIENT_LOGGER.debug("Connection error details: ", e);
                                         scheduler.schedule(this, 2, TimeUnit.SECONDS);
                                     } else {
+                                        CLIENT_LOGGER.warn("FFMPEG connection failed after {} attempts. Stopping stream",
+                                                attempts);
+                                        CLIENT_LOGGER.debug("Final connection error details: ", e);
                                         stopStream();
                                     }
                                 }
@@ -246,6 +252,9 @@ public class ClientHlsAudioManager {
                         audioLine.drain();
                     } catch (Exception e) {
                         if (!stopRequested) {
+                            CLIENT_LOGGER.warn("Playback thread aborted due to exception: {}",
+                                    e.getMessage());
+                            CLIENT_LOGGER.debug("Playback thread abort details: ", e);
                             stopStream();
                         }
                     } finally {
@@ -376,6 +385,8 @@ public class ClientHlsAudioManager {
                 scheduler.shutdownNow();
             }
         } catch (InterruptedException e) {
+            CLIENT_LOGGER.warn("Scheduler shutdown interrupted: {}", e.getMessage());
+            CLIENT_LOGGER.debug("Scheduler shutdown interrupt details: ", e);
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }

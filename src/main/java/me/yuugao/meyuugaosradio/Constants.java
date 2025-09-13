@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 public class Constants {
     public static final String MOD_ID = "meyuugaosradio";
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("meyuugaosradio");
+    public static final Logger SERVER_LOGGER = LoggerFactory.getLogger("meyuugaosradio-server");
+    public static final Logger CLIENT_LOGGER = LoggerFactory.getLogger("meyuugaosradio-client");
 
     public static final String RADIO_BLOCK_ID = "radio";
     public static final String SPEAKER_BLOCK_ID = "speaker";

@@ -69,7 +69,8 @@ public class Radio implements ModInitializer {
         registerSounds();
         ServerNetworkManager.initialize();
         ServerEventsManager.initialize();
-        LOGGER.info("MeYuugaos Radio mod initialized!");
+
+        SERVER_LOGGER.info("MeYuugaos Radio mod initialized!");
     }
 
     private void registerBlocks() {

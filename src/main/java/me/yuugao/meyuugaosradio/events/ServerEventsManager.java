@@ -1,5 +1,8 @@
 package me.yuugao.meyuugaosradio.events;
 
+import static me.yuugao.meyuugaosradio.Constants.SERVER_LOGGER;
+
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
@@ -23,6 +26,7 @@ public class ServerEventsManager {
                 minecraftServer.getWorlds().forEach(serverWorld -> ServerHlsAudioManager.onEndServerTick(serverWorld.getPlayers())));
 
         ServerLifecycleEvents.SERVER_STOPPING.register(minecraftServer -> {
+            SERVER_LOGGER.info("Server stopping, unloading block entities and stopping all audio instances...");
             shouldUnload = true;
             ServerHlsAudioManager.stopAllAudioInstances();
         });
