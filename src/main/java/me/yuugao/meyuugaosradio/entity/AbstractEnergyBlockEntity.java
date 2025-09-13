@@ -96,8 +96,10 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
         if (energy >= usage) {
             energy -= usage;
             markDirty();
+
             return true;
         }
+
         return false;
     }
 

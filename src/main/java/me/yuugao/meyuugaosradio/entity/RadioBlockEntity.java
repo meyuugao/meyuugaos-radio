@@ -14,12 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RadioBlockEntity extends AbstractEnergyBlockEntity {
-    private final List<BlockPos> speakers = new ArrayList<>();
+    private final List<BlockPos> speakers;
     private String streamUrl;
 
     public RadioBlockEntity(BlockPos pos, BlockState state) {
         super(Radio.RADIO_BLOCK_ENTITY, pos, state, 100_000L, 8L);
 
+        this.speakers = new ArrayList<>();
         this.streamUrl = StringUtils.EMPTY;
     }
 

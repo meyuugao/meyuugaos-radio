@@ -48,7 +48,7 @@ public class EnergyBlockItem extends BlockItem {
             setupEnergyComponents(stack);
             nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         }
-        
+
         return nbtComponent != null ? nbtComponent.copyNbt() : new NbtCompound();
     }
 
