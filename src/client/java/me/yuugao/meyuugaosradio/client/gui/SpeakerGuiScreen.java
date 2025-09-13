@@ -58,12 +58,12 @@ public class SpeakerGuiScreen extends MainGuiScreen {
 
     @Override
     protected Identifier getEnabledButtonTexture() {
-        return SPEAKER_BUTTON_ENABLED_TEXTURE;
+        return ENABLED_SPEAKER_BUTTON_TEXTURE;
     }
 
     @Override
     protected Identifier getDisabledButtonTexture() {
-        return SPEAKER_BUTTON_DISABLED_TEXTURE;
+        return DISABLED_SPEAKER_BUTTON_TEXTURE;
     }
 
     @Override

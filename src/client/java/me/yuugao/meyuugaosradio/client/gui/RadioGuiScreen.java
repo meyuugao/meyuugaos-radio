@@ -279,12 +279,12 @@ public class RadioGuiScreen extends MainGuiScreen {
 
     @Override
     protected Identifier getEnabledButtonTexture() {
-        return RADIO_BUTTON_ENABLED_TEXTURE;
+        return ENABLED_RADIO_BUTTON_TEXTURE;
     }
 
     @Override
     protected Identifier getDisabledButtonTexture() {
-        return RADIO_BUTTON_DISABLED_TEXTURE;
+        return DISABLED_RADIO_BUTTON_TEXTURE;
     }
 
     @Override

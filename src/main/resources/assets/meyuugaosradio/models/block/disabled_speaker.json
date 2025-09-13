@@ -4,7 +4,7 @@
     "particle": "meyuugaosradio:block/speaker/speaker_side",
     "down": "meyuugaosradio:block/speaker/speaker_bottom",
     "up": "meyuugaosradio:block/speaker/speaker_top",
-    "north": "meyuugaosradio:block/speaker/speaker_front_enabled",
+    "north": "meyuugaosradio:block/speaker/disabled_speaker_front",
     "east": "meyuugaosradio:block/speaker/speaker_side",
     "south": "meyuugaosradio:block/speaker/speaker_side",
     "west": "meyuugaosradio:block/speaker/speaker_side"

@@ -2,12 +2,13 @@ package me.yuugao.meyuugaosradio;
 
 import net.minecraft.util.Identifier;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Constants {
     public static final String MOD_ID = "meyuugaosradio";
 
-    public static final Logger LOGGER = Logger.getLogger("meyuugaosradio");
+    public static final Logger LOGGER = LoggerFactory.getLogger("meyuugaosradio");
 
     public static final String RADIO_BLOCK_ID = "radio";
     public static final String SPEAKER_BLOCK_ID = "speaker";
