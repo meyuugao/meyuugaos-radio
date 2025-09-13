@@ -2,6 +2,7 @@ package me.yuugao.meyuugaosradio;
 
 import static me.yuugao.meyuugaosradio.Constants.*;
 
+
 import me.yuugao.meyuugaosradio.block.RadioBlock;
 import me.yuugao.meyuugaosradio.block.SpeakerBlock;
 import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
@@ -23,7 +24,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -32,7 +32,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameRules;
 
-import java.util.AbstractMap;
 import java.util.function.Function;
 
 import team.reborn.energy.api.EnergyStorage;
@@ -43,11 +42,12 @@ public class Radio implements ModInitializer {
 
     private static Item RADIO_BLOCK_ITEM;
     private static Item SPEAKER_BLOCK_ITEM;
-    private static Item REMOTE_CONTROLLER_ITEM;
+
+    private static RemoteControllerItem REMOTE_CONTROLLER_ITEM;
     private static Item ELECTRONIC_CIRCUIT_ITEM;
+    private static Item ANTENNA_ITEM;
     private static Item BATTERY_ITEM;
     private static Item SMALL_BATTERY_ITEM;
-    private static Item ANTENNA_ITEM;
     private static Item SMALL_MEMBRANE_ITEM;
     private static Item MEMBRANE_ITEM;
 
@@ -71,45 +71,39 @@ public class Radio implements ModInitializer {
     }
 
     private void registerBlocks() {
-        AbstractMap.SimpleEntry<Block, Item> registeredRadio = registerBlock(RADIO_BLOCK_ID, RadioBlock::new, AbstractBlock.Settings.create().strength(2.0f));
-        RADIO_BLOCK = registeredRadio.getKey();
-        RADIO_BLOCK_ITEM = registeredRadio.getValue();
+        RADIO_BLOCK = registerBlock(RADIO_BLOCK_ID, RadioBlock::new, AbstractBlock.Settings.create().strength(2.0f));
+        SPEAKER_BLOCK = registerBlock(SPEAKER_BLOCK_ID, SpeakerBlock::new, AbstractBlock.Settings.create().strength(2.0f));
 
-        AbstractMap.SimpleEntry<Block, Item> registeredSpeaker = registerBlock(SPEAKER_BLOCK_ID, SpeakerBlock::new, AbstractBlock.Settings.create().strength(2.0f));
-        SPEAKER_BLOCK = registeredRadio.getKey();
-        SPEAKER_BLOCK_ITEM = registeredRadio.getValue();
+        RADIO_BLOCK_ITEM = registerItem(RADIO_BLOCK_ID, settings ->
+                        new EnergyBlockItem(RADIO_BLOCK, settings, RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE),
+                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+
+        SPEAKER_BLOCK_ITEM = registerItem(SPEAKER_BLOCK_ID, settings ->
+                        new EnergyBlockItem(SPEAKER_BLOCK, settings, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE),
+                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
     }
 
-    private static AbstractMap.SimpleEntry<Block, Item> registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
+    private static Block registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
         final Identifier identifier = Identifier.of("meyuugaosradio", path);
         final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
-
-        final Block block = Blocks.register(registryKey, factory, settings);
-        final Item item = Items.register(block);
-        return new AbstractMap.SimpleEntry<>(block, item);
+        return Blocks.register(registryKey, factory, settings);
     }
 
     private void registerItems() {
-        REMOTE_CONTROLLER_ITEM = Registry.register(Registries.ITEM, id(REMOTE_CONTROLLER_ID),
-                new RemoteControllerItem(new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE)));
+        REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, RemoteControllerItem::new, new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
+        ELECTRONIC_CIRCUIT_ITEM = registerItem(ELECTRONIC_CIRCUIT_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        BATTERY_ITEM = registerItem(BATTERY_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        SMALL_BATTERY_ITEM = registerItem(SMALL_BATTERY_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        ANTENNA_ITEM = registerItem(ANTENNA_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        SMALL_MEMBRANE_ITEM = registerItem(SMALL_MEMBRANE_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        MEMBRANE_ITEM = registerItem(MEMBRANE_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+    }
 
-        ELECTRONIC_CIRCUIT_ITEM = Registry.register(Registries.ITEM, id(ELECTRONIC_CIRCUIT_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
-
-        BATTERY_ITEM = Registry.register(Registries.ITEM, id(BATTERY_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
-
-        SMALL_BATTERY_ITEM = Registry.register(Registries.ITEM, id(SMALL_BATTERY_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
-
-        ANTENNA_ITEM = Registry.register(Registries.ITEM, id(ANTENNA_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
-
-        SMALL_MEMBRANE_ITEM = Registry.register(Registries.ITEM, id(SMALL_MEMBRANE_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
-
-        MEMBRANE_ITEM = Registry.register(Registries.ITEM, id(MEMBRANE_ID),
-                new Item(new Item.Settings().maxCount(DEFAULT_STACK_SIZE)));
+    public static Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
+        RegistryKey<Item> registryKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of("meyuugaosradio", path));
+        Item item = factory.apply(settings.registryKey(registryKey));
+        Registry.register(Registries.ITEM, registryKey, item);
+        return item;
     }
 
     private void registerBlockEntities() {

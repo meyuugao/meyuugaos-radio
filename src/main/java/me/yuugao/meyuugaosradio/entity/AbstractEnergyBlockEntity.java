@@ -38,7 +38,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
         this.energy = nbt.getLong("Energy");
-        this.volume = nbt.getFloat("Volume");
+        this.volume = nbt.contains("Volume") ? nbt.getFloat("Volume") : volume;
     }
 
     public boolean isEnabled() {

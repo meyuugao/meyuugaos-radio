@@ -1,14 +1,20 @@
 package me.yuugao.meyuugaosradio.client.render;
 
 import net.minecraft.client.gl.GlUsage;
-import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
+
 import org.joml.Matrix4f;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 
 public class BlockGlowRenderer {
@@ -54,7 +60,7 @@ public class BlockGlowRenderer {
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
         if (!enabled || vertexBuffer == null) return;
 
-        //RenderSystem.setShader();
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.depthMask(false);
@@ -79,7 +85,6 @@ public class BlockGlowRenderer {
             return;
         }
 
-        // Исправлено: новый способ создания VertexBuffer
         vertexBuffer = new VertexBuffer(GlUsage.STATIC_WRITE);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -97,42 +102,37 @@ public class BlockGlowRenderer {
         float z = pos.getZ();
         float offset = 0.001f;
 
-        // Top face
         buffer.vertex(x, y + 1 + offset, z).color(r, g, b, a);
         buffer.vertex(x, y + 1 + offset, z + 1).color(r, g, b, a);
         buffer.vertex(x + 1, y + 1 + offset, z + 1).color(r, g, b, a);
         buffer.vertex(x + 1, y + 1 + offset, z).color(r, g, b, a);
 
-        // Bottom face
         buffer.vertex(x, y - offset, z).color(r, g, b, a);
         buffer.vertex(x + 1, y - offset, z).color(r, g, b, a);
         buffer.vertex(x + 1, y - offset, z + 1).color(r, g, b, a);
         buffer.vertex(x, y - offset, z + 1).color(r, g, b, a);
 
-        // North face
         buffer.vertex(x, y, z - offset).color(r, g, b, a);
         buffer.vertex(x, y + 1, z - offset).color(r, g, b, a);
         buffer.vertex(x + 1, y + 1, z - offset).color(r, g, b, a);
         buffer.vertex(x + 1, y, z - offset).color(r, g, b, a);
 
-        // South face
         buffer.vertex(x, y, z + 1 + offset).color(r, g, b, a);
         buffer.vertex(x + 1, y, z + 1 + offset).color(r, g, b, a);
         buffer.vertex(x + 1, y + 1, z + 1 + offset).color(r, g, b, a);
         buffer.vertex(x, y + 1, z + 1 + offset).color(r, g, b, a);
 
-        // West face
         buffer.vertex(x - offset, y, z).color(r, g, b, a);
         buffer.vertex(x - offset, y, z + 1).color(r, g, b, a);
         buffer.vertex(x - offset, y + 1, z + 1).color(r, g, b, a);
         buffer.vertex(x - offset, y + 1, z).color(r, g, b, a);
 
-        // East face
         buffer.vertex(x + 1 + offset, y, z).color(r, g, b, a);
         buffer.vertex(x + 1 + offset, y + 1, z).color(r, g, b, a);
         buffer.vertex(x + 1 + offset, y + 1, z + 1).color(r, g, b, a);
         buffer.vertex(x + 1 + offset, y, z + 1).color(r, g, b, a);
     }
 
-    public record GlowInfo(float r, float g, float b, float a) {}
+    public record GlowInfo(float r, float g, float b, float a) {
+    }
 }
