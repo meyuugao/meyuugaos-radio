@@ -114,13 +114,13 @@ public class ClientHlsAudioManager {
         private final String streamUrl;
         private final int sampleRate;
         private final int channels;
-        private final AtomicBoolean isPlaying = new AtomicBoolean(false);
-        private final AtomicBoolean isStarting = new AtomicBoolean(false);
+        private final AtomicBoolean isPlaying;
+        private final AtomicBoolean isStarting;
+        private final BlockingQueue<byte[]> audioQueue;
 
         private Process ffmpegProcess;
         private Thread playbackThread;
         private Thread readThread;
-        private final BlockingQueue<byte[]> audioQueue = new LinkedBlockingQueue<>(30);
         private volatile boolean stopRequested = false;
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
@@ -130,6 +130,9 @@ public class ClientHlsAudioManager {
             this.streamUrl = streamUrl;
             this.sampleRate = sampleRate;
             this.channels = channels;
+            this.isPlaying = new AtomicBoolean(false);
+            this.isStarting = new AtomicBoolean(false);
+            this.audioQueue = new LinkedBlockingQueue<>(30);
         }
 
         public void startStream() {
