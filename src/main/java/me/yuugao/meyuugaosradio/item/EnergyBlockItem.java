@@ -20,6 +20,7 @@ public class EnergyBlockItem extends BlockItem {
 
     public EnergyBlockItem(Block block, Settings settings, long capacity, int usage) {
         super(block, settings);
+
         this.capacity = capacity;
         this.usage = usage;
     }
@@ -28,6 +29,7 @@ public class EnergyBlockItem extends BlockItem {
     public ItemStack getDefaultStack() {
         ItemStack stack = super.getDefaultStack();
         setupEnergyComponents(stack);
+
         return stack;
     }
 
@@ -46,6 +48,7 @@ public class EnergyBlockItem extends BlockItem {
             setupEnergyComponents(stack);
             nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         }
+        
         return nbtComponent != null ? nbtComponent.copyNbt() : new NbtCompound();
     }
 
