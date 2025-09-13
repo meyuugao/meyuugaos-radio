@@ -85,6 +85,7 @@ public class SpeakerBlock extends AbstractEnergyBlock {
         super.onBreak(world, pos, state, player);
 
         this.globalUnbind(player, world, pos);
+
         return state;
     }
 

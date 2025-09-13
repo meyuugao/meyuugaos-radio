@@ -10,6 +10,7 @@ import me.yuugao.meyuugaosradio.block.DirectionEnum;
 import me.yuugao.meyuugaosradio.block.RadioBlock;
 import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
 import me.yuugao.meyuugaosradio.entity.SpeakerBlockEntity;
+import me.yuugao.meyuugaosradio.item.EnergyItemHandler;
 import me.yuugao.meyuugaosradio.item.RemoteControllerItem;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
@@ -53,9 +54,10 @@ public abstract class ItemStackMixin {
                     if (block instanceof RadioBlock && context.getPlayer().isSneaking()) {
                         BlockEntity blockEntity = context.getWorld().getBlockEntity(context.getBlockPos());
                         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
-                            long toTransfer = Math.min(remoteControllerItem.getCapacity(itemStack) - remoteControllerItem.getEnergy(itemStack), radioBlockEntity.getAmount());
+                            EnergyItemHandler energyItemHandler = remoteControllerItem.getEnergyHandler();
+                            long toTransfer = Math.min(energyItemHandler.getCapacity(itemStack) - energyItemHandler.getEnergy(itemStack), radioBlockEntity.getAmount());
                             radioBlockEntity.setEnergy(radioBlockEntity.getAmount() - toTransfer);
-                            remoteControllerItem.addEnergy(itemStack, toTransfer);
+                            energyItemHandler.addEnergy(itemStack, toTransfer);
                         }
                     }
                     cir.setReturnValue(ActionResult.SUCCESS);

@@ -33,10 +33,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected AbstractEnergyBlock(Settings settings) {
         super(settings.nonOpaque().strength(2.0f));
 
-        this.setDefaultState(stateManager.getDefaultState()
-                .with(FACING, Direction.NORTH)
-                .with(DIRECTION, DirectionEnum.SIDE)
-                .with(ENERGY_STATE, EnergyStateEnum.DISABLED));
+        this.setDefaultState(stateManager.getDefaultState().with(FACING, Direction.NORTH).with(DIRECTION, DirectionEnum.SIDE).with(ENERGY_STATE, EnergyStateEnum.DISABLED));
     }
 
     @Override
@@ -52,14 +49,9 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         Direction side = ctx.getSide();
-        DirectionEnum direction = side == Direction.UP ? DirectionEnum.UP :
-                side == Direction.DOWN ? DirectionEnum.DOWN :
-                        DirectionEnum.SIDE;
+        DirectionEnum direction = side == Direction.UP ? DirectionEnum.UP : side == Direction.DOWN ? DirectionEnum.DOWN : DirectionEnum.SIDE;
 
-        return getDefaultState()
-                .with(FACING, ctx.getHorizontalPlayerFacing().getOpposite())
-                .with(DIRECTION, direction)
-                .with(ENERGY_STATE, EnergyStateEnum.DISABLED);
+        return getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite()).with(DIRECTION, direction).with(ENERGY_STATE, EnergyStateEnum.DISABLED);
     }
 
     @Nullable
@@ -114,6 +106,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected Vec3d getVecDirection(World world, BlockPos pos) {
         Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
         DirectionEnum direction = world.getBlockState(pos).get(AbstractEnergyBlock.DIRECTION);
+
         return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
     }
 

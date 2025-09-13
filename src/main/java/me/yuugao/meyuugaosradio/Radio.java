@@ -9,6 +9,7 @@ import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
 import me.yuugao.meyuugaosradio.entity.SpeakerBlockEntity;
 import me.yuugao.meyuugaosradio.events.ServerEventsManager;
 import me.yuugao.meyuugaosradio.item.EnergyBlockItem;
+import me.yuugao.meyuugaosradio.item.EnergyItemHandler;
 import me.yuugao.meyuugaosradio.item.RemoteControllerItem;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 
@@ -137,37 +138,41 @@ public class Radio implements ModInitializer {
         EnergyStorage.SIDED.registerForBlockEntity((be, dir) -> be, RADIO_BLOCK_ENTITY);
         EnergyStorage.SIDED.registerForBlockEntity((be, dir) -> be, SPEAKER_BLOCK_ENTITY);
 
-        EnergyStorage.ITEM.registerForItems((stack, context) -> new EnergyStorage() {
-            @Override
-            public long insert(long maxAmount, TransactionContext transaction) {
-                RemoteControllerItem item = (RemoteControllerItem) stack.getItem();
-                long inserted = Math.min(maxAmount, item.getCapacity(stack) - item.getEnergy(stack));
+        EnergyStorage.ITEM.registerForItems((stack, context) -> {
+            if (!(stack.getItem() instanceof RemoteControllerItem remoteItem)) return null;
 
-                transaction.addCloseCallback((t, result) -> {
-                    if (result.wasCommitted()) {
-                        item.addEnergy(stack, inserted);
-                    }
-                });
+            EnergyItemHandler energyHandler = remoteItem.getEnergyHandler();
 
-                return inserted;
-            }
+            return new EnergyStorage() {
+                @Override
+                public long insert(long maxAmount, TransactionContext transaction) {
+                    long inserted = Math.min(maxAmount,
+                            energyHandler.getCapacity(stack) - energyHandler.getEnergy(stack));
 
-            @Override
-            public long extract(long maxAmount, TransactionContext transaction) {
-                return 0;
-            }
+                    transaction.addCloseCallback((t, result) -> {
+                        if (result.wasCommitted()) {
+                            energyHandler.addEnergy(stack, inserted);
+                        }
+                    });
 
-            @Override
-            public long getAmount() {
-                RemoteControllerItem item = (RemoteControllerItem) stack.getItem();
-                return item.getEnergy(stack);
-            }
+                    return inserted;
+                }
 
-            @Override
-            public long getCapacity() {
-                RemoteControllerItem item = (RemoteControllerItem) stack.getItem();
-                return item.getCapacity(stack);
-            }
+                @Override
+                public long extract(long maxAmount, TransactionContext transaction) {
+                    return 0;
+                }
+
+                @Override
+                public long getAmount() {
+                    return energyHandler.getEnergy(stack);
+                }
+
+                @Override
+                public long getCapacity() {
+                    return energyHandler.getCapacity(stack);
+                }
+            };
         }, REMOTE_CONTROLLER_ITEM);
     }
 
@@ -177,6 +182,7 @@ public class Radio implements ModInitializer {
 
     private SoundEvent registerSound(String name) {
         Identifier id = Identifier.of("meyuugaosradio", name);
+
         return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
     }
 }

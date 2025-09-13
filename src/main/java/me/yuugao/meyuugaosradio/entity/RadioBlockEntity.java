@@ -54,7 +54,7 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
                 }
             }
         }
-        streamUrl = nbt.getString("StreamUrl").orElse("");
+        streamUrl = nbt.getString("StreamUrl").orElse(StringUtils.EMPTY);
     }
 
     public void connectSpeaker(BlockPos pos) {
