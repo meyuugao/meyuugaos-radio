@@ -11,15 +11,12 @@ import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
-import com.mojang.serialization.MapCodec;
 
 public class SpeakerBlock extends AbstractEnergyBlock {
     public SpeakerBlock(Settings settings) {
