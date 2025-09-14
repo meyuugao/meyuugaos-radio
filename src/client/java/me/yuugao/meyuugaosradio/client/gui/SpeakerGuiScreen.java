@@ -36,8 +36,7 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        super.render(context, textRenderer, mouseX, mouseY, delta);
+        super.render(context);
     }
 
     @Override

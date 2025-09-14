@@ -156,7 +156,7 @@ public class RadioGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, textRenderer, mouseX, mouseY, delta);
+        super.render(context);
 
         if (currentTime - lastCursorTime > 500) {
             cursorVisible = !cursorVisible;
