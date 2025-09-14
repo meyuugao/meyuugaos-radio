@@ -156,7 +156,7 @@ public class RadioGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, textRenderer, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
 
         if (currentTime - lastCursorTime > 500) {
             cursorVisible = !cursorVisible;
@@ -169,7 +169,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                 TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT,
                 TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
 
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         int textX = x + TEXT_FIELD_X1 + 2;
         int textY = y + TEXT_FIELD_Y1;
 
