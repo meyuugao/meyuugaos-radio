@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AEA",
+    "BMB",
+    "III"
+  ],
+  "key": {
+    "A": {
+      "item": "meyuugaosradio:antenna"
+    },
+    "B": {
+      "item": "meyuugaosradio:battery"
+    },
+    "E": {
+      "item": "meyuugaosradio:electronic_circuit"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "M": {
+      "item": "meyuugaosradio:membrane"
+    }
+  },
+  "result": {
+    "item": "meyuugaosradio:speaker",
+    "count": 1
+  }
+}
