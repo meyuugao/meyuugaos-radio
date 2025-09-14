@@ -10,7 +10,6 @@ import net.minecraft.util.Formatting;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class EnergyItemHandler {
