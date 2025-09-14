@@ -33,7 +33,7 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        super.render(matrixStack, textRenderer);
+        super.render(matrixStack);
     }
 
     @Override

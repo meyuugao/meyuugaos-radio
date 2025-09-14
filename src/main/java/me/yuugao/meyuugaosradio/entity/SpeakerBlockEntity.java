@@ -57,15 +57,19 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
         if (this.world == null) return;
 
         BlockEntity blockEntity = this.world.getBlockEntity(pos.toImmutable());
-        if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
-            Direction facing = this.world.getBlockState(this.pos).get(HorizontalFacingBlock.FACING);
-            DirectionEnum direction = this.world.getBlockState(this.pos).get(AbstractEnergyBlock.DIRECTION);
-            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
-                    direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
-                    direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+        if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
+            this.radioPos = pos;
 
-            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection,
-                    this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+            if (!radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
+                Direction facing = this.world.getBlockState(this.pos).get(HorizontalFacingBlock.FACING);
+                DirectionEnum direction = this.world.getBlockState(this.pos).get(AbstractEnergyBlock.DIRECTION);
+                Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                        direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                        direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+
+                ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection,
+                        this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+            }
         }
 
         markDirty();
@@ -75,11 +79,14 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
         if (this.world == null || radioPos == null) return;
 
         BlockEntity blockEntity = this.world.getBlockEntity(radioPos);
-        if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
-            ServerHlsAudioManager.removeSoundSource(radioBlockEntity.getStreamUrl(), this.pos, world.getRegistryKey());
+        if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
+            radioPos = null;
+
+            if (!radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
+                ServerHlsAudioManager.removeSoundSource(radioBlockEntity.getStreamUrl(), this.pos, world.getRegistryKey());
+            }
         }
 
-        radioPos = null;
         markDirty();
     }
 

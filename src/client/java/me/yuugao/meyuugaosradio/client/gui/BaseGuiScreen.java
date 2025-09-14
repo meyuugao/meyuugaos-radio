@@ -179,7 +179,7 @@ public abstract class BaseGuiScreen extends Screen {
         return super.charTyped(chr, modifiers);
     }
 
-    public void render(MatrixStack matrixStack, TextRenderer textRenderer) {
+    public void render(MatrixStack matrixStack) {
         if (MinecraftClient.getInstance().world == null) return;
 
         this.renderBackground(matrixStack);
