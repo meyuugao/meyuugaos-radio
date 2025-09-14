@@ -177,7 +177,7 @@ public abstract class BaseGuiScreen extends Screen {
         return super.charTyped(chr, modifiers);
     }
 
-    public void render(DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (MinecraftClient.getInstance().world == null) return;
 
         this.renderBackground(context, mouseX, mouseY, delta);
