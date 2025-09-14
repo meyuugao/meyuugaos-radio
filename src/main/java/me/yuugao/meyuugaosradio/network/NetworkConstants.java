@@ -19,9 +19,7 @@ public class NetworkConstants {
                 (payload, buf) -> {
                     buf.writeBlockPos(payload.pos);
                     buf.writeInt(payload.speakers.size());
-                    for (BlockPos speakerPos : payload.speakers) {
-                        buf.writeBlockPos(speakerPos);
-                    }
+                    payload.speakers.forEach(buf::writeBlockPos);
                 },
                 buf -> {
                     BlockPos pos = buf.readBlockPos();

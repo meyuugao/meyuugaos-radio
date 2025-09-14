@@ -83,15 +83,13 @@ public class ClientNetworkManager {
             } else {
                 BlockGlowRenderer.clearAll();
                 BlockGlowRenderer.addBlock(radioPos, RADIO_COLOR[0], RADIO_COLOR[1], RADIO_COLOR[2], RADIO_COLOR[3]);
-                for (BlockPos speakerPos : speakers) {
-                    BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]);
-                }
+                speakers.forEach(speakerPos ->
+                        BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]));
             }
         } else {
             BlockGlowRenderer.addBlock(radioPos, RADIO_COLOR[0], RADIO_COLOR[1], RADIO_COLOR[2], RADIO_COLOR[3]);
-            for (BlockPos speakerPos : speakers) {
-                BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]);
-            }
+            speakers.forEach(speakerPos ->
+                    BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]));
             BlockGlowRenderer.setEnabled(true);
         }
     }
@@ -100,9 +98,7 @@ public class ClientNetworkManager {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBoolean(enabled);
         buf.writeInt(blocks.size());
-        for (BlockPos pos : blocks) {
-            buf.writeBlockPos(pos);
-        }
+        blocks.forEach(buf::writeBlockPos);
         buf.writeBlockPos(speakerPos);
         ClientPlayNetworking.send(new NetworkConstants.ClientBlocksUpdatePayload(enabled, blocks.size(), List.copyOf(blocks), speakerPos));
     }

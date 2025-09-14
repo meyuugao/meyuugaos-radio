@@ -79,9 +79,9 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
 
         BlockEntity be = world.getBlockEntity(pos);
         if (be instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
-            NbtCompound nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA).getNbt();
-            if (nbt != null) {
-                abstractEnergyBlockEntity.readNbt(nbt, world.getRegistryManager());
+            NbtComponent nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+            if (nbt != null && nbt.copyNbt() != null) {
+                abstractEnergyBlockEntity.readNbt(nbt.copyNbt(), world.getRegistryManager());
             }
         }
     }
@@ -113,7 +113,6 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected Vec3d getVecDirection(World world, BlockPos pos) {
         Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
         DirectionEnum direction = world.getBlockState(pos).get(AbstractEnergyBlock.DIRECTION);
-
         return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 :
                 direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
     }

@@ -50,12 +50,13 @@ public abstract class ItemStackMixin {
                                 context.getWorld().getBlockState(context.getBlockPos()));
                         updateSoundSourceDirection(context);
                     }
+
                     cir.setReturnValue(ActionResult.SUCCESS);
                 } else if (itemStack.isOf(Registries.ITEM.get(MEYUUGAOSRADIO_REMOTE_CONTROLLER_ID))) {
-                    RemoteControllerItem remoteControllerItem = (RemoteControllerItem) itemStack.getItem();
                     if (block instanceof RadioBlock && context.getPlayer().isSneaking()) {
                         BlockEntity blockEntity = context.getWorld().getBlockEntity(context.getBlockPos());
                         if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
+                            RemoteControllerItem remoteControllerItem = (RemoteControllerItem) itemStack.getItem();
                             EnergyItemHandler energyItemHandler = remoteControllerItem.getEnergyItemHandler();
                             long toTransfer = Math.min(energyItemHandler.getCapacity(itemStack) -
                                     energyItemHandler.getEnergy(itemStack), radioBlockEntity.getAmount());
@@ -63,6 +64,7 @@ public abstract class ItemStackMixin {
                             energyItemHandler.addEnergy(itemStack, toTransfer);
                         }
                     }
+
                     cir.setReturnValue(ActionResult.SUCCESS);
                 }
             }
@@ -83,6 +85,7 @@ public abstract class ItemStackMixin {
                 }
             }
         }
+
         if (streamUrl != null) {
             Direction facing = context.getWorld().getBlockState(context.getBlockPos()).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = context.getWorld().getBlockState(context.getBlockPos()).get(AbstractEnergyBlock.DIRECTION);
