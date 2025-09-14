@@ -1,5 +1,9 @@
 package me.yuugao.meyuugaosradio.item;
 
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_CAPACITY;
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_USAGE;
+
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 
@@ -30,10 +34,10 @@ public class RemoteControllerItem extends Item {
         void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
     }
 
-    public RemoteControllerItem(Settings settings, long capacity, long usage) {
+    public RemoteControllerItem(Settings settings) {
         super(settings);
 
-        this.energyItemHandler = new EnergyItemHandler(capacity, usage);
+        this.energyItemHandler = new EnergyItemHandler(REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE);
     }
 
     @Override

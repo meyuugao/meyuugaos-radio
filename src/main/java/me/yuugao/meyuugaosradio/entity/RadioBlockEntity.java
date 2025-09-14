@@ -1,6 +1,8 @@
 package me.yuugao.meyuugaosradio.entity;
 
-import static me.yuugao.meyuugaosradio.Constants.*;
+import static me.yuugao.meyuugaosradio.Constants.RADIO_ENERGY_CAPACITY;
+import static me.yuugao.meyuugaosradio.Constants.RADIO_ENERGY_USAGE;
+
 
 import me.yuugao.meyuugaosradio.Radio;
 

@@ -21,7 +21,6 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
@@ -89,8 +88,7 @@ public class Radio implements ModInitializer {
     }
 
     private void registerItems() {
-        REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, settings ->
-                        new RemoteControllerItem(settings, REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE),
+        REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, RemoteControllerItem::new,
                 new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
         ELECTRONIC_CIRCUIT_ITEM = registerItem(ELECTRONIC_CIRCUIT_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
         BATTERY_ITEM = registerItem(BATTERY_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
