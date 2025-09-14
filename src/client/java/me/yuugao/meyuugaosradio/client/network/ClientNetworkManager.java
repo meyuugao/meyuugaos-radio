@@ -64,7 +64,7 @@ public class ClientNetworkManager {
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerStreamStartPayload.ID, (payload, context) ->
                 context.client().execute(() -> ClientHlsAudioManager.handleStreamStart(payload.streamUrl())));
-        
+
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerStreamStopPayload.ID, (payload, context) ->
                 context.client().execute(() -> ClientHlsAudioManager.handleStreamStop(payload.streamUrl())));
 
