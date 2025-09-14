@@ -41,8 +41,7 @@ public class RadioBlock extends AbstractEnergyBlock {
 
     @Override
     public void use(World world, BlockPos pos, ServerPlayerEntity player) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {
+        if (world.getBlockEntity(pos) instanceof RadioBlockEntity radioBlockEntity) {
             ServerNetworkManager.sendServerOpenRadioGuiPacket(player, pos, radioBlockEntity.getStreamUrl(), radioBlockEntity.getVolume());
         }
     }
@@ -69,6 +68,7 @@ public class RadioBlock extends AbstractEnergyBlock {
             if (!currentStreamUrl.isEmpty()) {
                 ServerHlsAudioManager.addSoundSource(currentStreamUrl, pos, this.getVecDirection(world, pos),
                         radioBlockEntity.getVolume() * RADIO_VOLUME_MULTIPLIER, RADIO_MAX_RANGE, world.getRegistryKey());
+
                 List.copyOf(radioBlockEntity.getSpeakers()).forEach(speakerPos -> {
                     if (world.getBlockEntity(speakerPos) instanceof SpeakerBlockEntity speakerBlockEntity && world.getServer() != null) {
                         if (!radioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
@@ -77,18 +77,21 @@ public class RadioBlock extends AbstractEnergyBlock {
                         }
                     }
                 });
+
                 activateConnectedSpeakers(world, radioBlockEntity);
             }
         }
     }
 
     private void activateConnectedSpeakers(World world, RadioBlockEntity radioBlockEntity) {
-        for (BlockPos speakerPos : radioBlockEntity.getSpeakers()) {
+        radioBlockEntity.getSpeakers().forEach(speakerPos -> {
             BlockEntity blockEntity = world.getBlockEntity(speakerPos);
             if (blockEntity instanceof SpeakerBlockEntity speakerBlockEntity && speakerBlockEntity.isEnabled()) {
-                ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), speakerBlockEntity.getPos(), this.getVecDirection(world, speakerBlockEntity.getPos()), speakerBlockEntity.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+                ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(),
+                        speakerBlockEntity.getPos(), this.getVecDirection(world, speakerBlockEntity.getPos()),
+                        speakerBlockEntity.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
             }
-        }
+        });
     }
 
     @Override
@@ -100,9 +103,9 @@ public class RadioBlock extends AbstractEnergyBlock {
             String currentStreamUrl = radioBlockEntity.getStreamUrl();
             if (!currentStreamUrl.isEmpty()) {
                 ServerHlsAudioManager.removeSoundSource(currentStreamUrl, pos, world.getRegistryKey());
-                for (BlockPos speakerPos : radioBlockEntity.getSpeakers()) {
-                    ServerHlsAudioManager.removeSoundSource(currentStreamUrl, speakerPos, world.getRegistryKey());
-                }
+
+                radioBlockEntity.getSpeakers().forEach(speakerPos ->
+                        ServerHlsAudioManager.removeSoundSource(currentStreamUrl, speakerPos, world.getRegistryKey()));
             }
         }
     }
@@ -119,6 +122,7 @@ public class RadioBlock extends AbstractEnergyBlock {
     @Override
     public void globalUnbind(PlayerEntity player, World world, BlockPos pos) {
         RadioBlockEntity radioBlockEntity = (RadioBlockEntity) world.getBlockEntity(pos);
+
         if (world.isClient() || radioBlockEntity == null) return;
 
         if (!radioBlockEntity.getStreamUrl().isEmpty()) {

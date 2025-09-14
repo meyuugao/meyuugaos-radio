@@ -77,17 +77,16 @@ public class Radio implements ModInitializer {
     private void registerBlocks() {
         RADIO_BLOCK = registerBlock(RADIO_BLOCK_ID, RadioBlock::new, AbstractBlock.Settings.create().strength(2.0f));
         SPEAKER_BLOCK = registerBlock(SPEAKER_BLOCK_ID, SpeakerBlock::new, AbstractBlock.Settings.create().strength(2.0f));
-
-        RADIO_BLOCK_ITEM = registerItem(RADIO_BLOCK_ID, settings ->
-                        new EnergyBlockItem(RADIO_BLOCK, settings, RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE),
-                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
-
-        SPEAKER_BLOCK_ITEM = registerItem(SPEAKER_BLOCK_ID, settings ->
-                        new EnergyBlockItem(SPEAKER_BLOCK, settings, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE),
-                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
     }
 
     private void registerItems() {
+        RADIO_BLOCK_ITEM = registerItem(RADIO_BLOCK_ID, settings ->
+                        new EnergyBlockItem(RADIO_BLOCK, settings, RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE),
+                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+        SPEAKER_BLOCK_ITEM = registerItem(SPEAKER_BLOCK_ID, settings ->
+                        new EnergyBlockItem(SPEAKER_BLOCK, settings, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE),
+                new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
+
         REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, RemoteControllerItem::new,
                 new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
         ELECTRONIC_CIRCUIT_ITEM = registerItem(ELECTRONIC_CIRCUIT_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
@@ -101,7 +100,6 @@ public class Radio implements ModInitializer {
     private void registerBlockEntities() {
         RADIO_BLOCK_ENTITY = registerBlockEntity(RADIO_BLOCK_ENTITY_ID, abstractBlock ->
                 FabricBlockEntityTypeBuilder.create(RadioBlockEntity::new, RADIO_BLOCK).build(), RADIO_BLOCK);
-
         SPEAKER_BLOCK_ENTITY = registerBlockEntity(SPEAKER_BLOCK_ENTITY_ID, abstractBlock ->
                 FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, SPEAKER_BLOCK).build(), SPEAKER_BLOCK);
     }
@@ -126,6 +124,7 @@ public class Radio implements ModInitializer {
             entries.add(RADIO_BLOCK_ITEM.getDefaultStack());
             entries.add(SPEAKER_BLOCK_ITEM.getDefaultStack());
         });
+
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
             entries.add(REMOTE_CONTROLLER_ITEM.getDefaultStack());
             entries.add(ELECTRONIC_CIRCUIT_ITEM.getDefaultStack());
@@ -152,7 +151,7 @@ public class Radio implements ModInitializer {
                     long inserted = Math.min(maxAmount,
                             energyHandler.getCapacity(stack) - energyHandler.getEnergy(stack));
 
-                    transaction.addCloseCallback((t, result) -> {
+                    transaction.addCloseCallback((context, result) -> {
                         if (result.wasCommitted()) {
                             energyHandler.addEnergy(stack, inserted);
                         }
@@ -189,7 +188,6 @@ public class Radio implements ModInitializer {
 
     private SoundEvent registerSound(String name) {
         Identifier id = Identifier.of("meyuugaosradio", name);
-
         return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
     }
 }

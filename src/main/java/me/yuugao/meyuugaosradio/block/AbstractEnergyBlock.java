@@ -113,7 +113,6 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected Vec3d getVecDirection(World world, BlockPos pos) {
         Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
         DirectionEnum direction = world.getBlockState(pos).get(AbstractEnergyBlock.DIRECTION);
-
         return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 :
                 direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
     }

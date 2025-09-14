@@ -10,6 +10,7 @@ import net.minecraft.util.Formatting;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class EnergyItemHandler {
@@ -31,28 +32,25 @@ public class EnergyItemHandler {
     }
 
     public void setupEnergyComponents(ItemStack stack) {
-        NbtCompound energyData = new NbtCompound();
-        energyData.putLong("Energy", 0L);
-        energyData.putLong("Capacity", defaultCapacity);
-        energyData.putLong("Usage", defaultUsage);
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(energyData));
+        NbtCompound nbt = new NbtCompound();
+        nbt.putLong("Energy", 0L);
+        nbt.putLong("Capacity", defaultCapacity);
+        nbt.putLong("Usage", defaultUsage);
+        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
     }
 
     public long getCapacity(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-
         return nbtComponent != null ? nbtComponent.copyNbt().getLong("Capacity").orElse(defaultCapacity) : defaultCapacity;
     }
 
     public long getEnergy(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-
         return nbtComponent != null ? nbtComponent.copyNbt().getLong("Energy").orElse(0L) : 0L;
     }
 
     public long getUsage(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-
         return nbtComponent != null ? nbtComponent.copyNbt().getLong("Usage").orElse(defaultUsage) : defaultUsage;
     }
 

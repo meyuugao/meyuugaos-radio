@@ -46,9 +46,4 @@ public class Constants {
 
     public static final Identifier TECHREBORN_WRENCH_ID = Identifier.of("techreborn", "wrench");
     public static final Identifier MEYUUGAOSRADIO_REMOTE_CONTROLLER_ID = Identifier.of("meyuugaosradio", "remote_controller");
-
-
-    public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
-    }
 }

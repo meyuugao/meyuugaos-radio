@@ -38,8 +38,7 @@ public class SpeakerBlock extends AbstractEnergyBlock {
 
     @Override
     public void use(World world, BlockPos pos, ServerPlayerEntity player) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {
+        if (world.getBlockEntity(pos) instanceof SpeakerBlockEntity speakerBlockEntity) {
             ServerNetworkManager.sendServerOpenSpeakerGuiPacket(player, pos, speakerBlockEntity.getVolume());
         }
     }
@@ -93,6 +92,7 @@ public class SpeakerBlock extends AbstractEnergyBlock {
     @Override
     public void globalUnbind(PlayerEntity player, World world, BlockPos pos) {
         SpeakerBlockEntity speakerBlockEntity = (SpeakerBlockEntity) world.getBlockEntity(pos);
+
         if (world.isClient() || speakerBlockEntity == null) return;
 
         BlockPos radioPos = speakerBlockEntity.getRadioPos();
