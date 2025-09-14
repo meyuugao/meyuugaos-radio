@@ -7,7 +7,6 @@ import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -177,7 +176,7 @@ public abstract class BaseGuiScreen extends Screen {
         return super.charTyped(chr, modifiers);
     }
 
-    public void render(DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (MinecraftClient.getInstance().world == null) return;
 
         this.renderBackground(context, mouseX, mouseY, delta);
