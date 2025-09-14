@@ -101,6 +101,67 @@ public class ServerNetworkManager {
         ServerPlayNetworking.send(player, SERVER_SPEAKER_GLOBALUNBIND_PACKET, buf);
     }
 
+    private static void sendServerAddBlockPacket(ServerPlayerEntity player, BlockPos pos, float r, float g, float b, float a) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeFloat(r);
+        buf.writeFloat(g);
+        buf.writeFloat(b);
+        buf.writeFloat(a);
+        ServerPlayNetworking.send(player, SERVER_ADD_BLOCK_PACKET, buf);
+    }
+
+    private static void sendServerRemoveBlockPacket(ServerPlayerEntity player, BlockPos pos) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        ServerPlayNetworking.send(player, SERVER_REMOVE_BLOCK_PACKET, buf);
+    }
+
+    public static void sendServerPlayerSendMessagePacket(ServerPlayerEntity player, Text text, boolean overlay) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeText(text);
+        buf.writeBoolean(overlay);
+        ServerPlayNetworking.send(player, SERVER_PLAYER_SENDMESSAGE_PACKET, buf);
+    }
+
+    public static void sendServerOpenRadioGuiPacket(ServerPlayerEntity player, BlockPos pos, String streamUrl, float volume) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeString(streamUrl);
+        buf.writeFloat(volume);
+        ServerPlayNetworking.send(player, SERVER_OPEN_RADIO_GUI_PACKET, buf);
+    }
+
+    public static void sendServerOpenSpeakerGuiPacket(ServerPlayerEntity player, BlockPos pos, float volume) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeFloat(volume);
+        ServerPlayNetworking.send(player, SERVER_OPEN_SPEAKER_GUI_PACKET, buf);
+    }
+
+    public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(streamUrl);
+        ServerPlayNetworking.send(player, SERVER_STREAM_START_PACKET, buf);
+    }
+
+    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(streamUrl);
+        ServerPlayNetworking.send(player, SERVER_STREAM_STOP_PACKET, buf);
+    }
+
+    public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(streamUrl);
+        buf.writeFloat(volume);
+        ServerPlayNetworking.send(player, SERVER_VOLUME_UPDATE_PACKET, buf);
+    }
+
+    public static void sendServerGlowClearPacket(ServerPlayerEntity player) {
+        ServerPlayNetworking.send(player, SERVER_GLOW_CLEAR_PACKET, PacketByteBufs.create());
+    }
+
     private static void serverSpeakerUse(ServerPlayerEntity player, boolean renderEnabled, List<BlockPos> blocks, World world, BlockPos speakerPos) {
         if (!renderEnabled) return;
 
@@ -195,66 +256,5 @@ public class ServerNetworkManager {
                 ServerHlsAudioManager.updateSoundSourceVolume(streamUrl, pos, volume * volumeMultiplier, world.getRegistryKey());
             }
         }
-    }
-
-    private static void sendServerAddBlockPacket(ServerPlayerEntity player, BlockPos pos, float r, float g, float b, float a) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeFloat(r);
-        buf.writeFloat(g);
-        buf.writeFloat(b);
-        buf.writeFloat(a);
-        ServerPlayNetworking.send(player, SERVER_ADD_BLOCK_PACKET, buf);
-    }
-
-    private static void sendServerRemoveBlockPacket(ServerPlayerEntity player, BlockPos pos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        ServerPlayNetworking.send(player, SERVER_REMOVE_BLOCK_PACKET, buf);
-    }
-
-    public static void sendServerPlayerSendMessagePacket(ServerPlayerEntity player, Text text, boolean overlay) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeText(text);
-        buf.writeBoolean(overlay);
-        ServerPlayNetworking.send(player, SERVER_PLAYER_SENDMESSAGE_PACKET, buf);
-    }
-
-    public static void sendServerOpenRadioGuiPacket(ServerPlayerEntity player, BlockPos pos, String streamUrl, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeString(streamUrl);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_OPEN_RADIO_GUI_PACKET, buf);
-    }
-
-    public static void sendServerOpenSpeakerGuiPacket(ServerPlayerEntity player, BlockPos pos, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_OPEN_SPEAKER_GUI_PACKET, buf);
-    }
-
-    public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        ServerPlayNetworking.send(player, SERVER_STREAM_START_PACKET, buf);
-    }
-
-    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        ServerPlayNetworking.send(player, SERVER_STREAM_STOP_PACKET, buf);
-    }
-
-    public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        buf.writeFloat(volume);
-        ServerPlayNetworking.send(player, SERVER_VOLUME_UPDATE_PACKET, buf);
-    }
-
-    public static void sendServerGlowClearPacket(ServerPlayerEntity player) {
-        ServerPlayNetworking.send(player, SERVER_GLOW_CLEAR_PACKET, PacketByteBufs.create());
     }
 }
