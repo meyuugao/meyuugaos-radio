@@ -173,11 +173,11 @@ public class NetworkConstants {
         }
     }
 
-    public record ServerStreamStopPayload(String streamUrl) implements CustomPayload {
-        public static final Id<ServerStreamStopPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_stream_stop_packet"));
-        public static final PacketCodec<RegistryByteBuf, ServerStreamStopPayload> CODEC = PacketCodec.of(
+    public record ServerStreamStartPayload(String streamUrl) implements CustomPayload {
+        public static final Id<ServerStreamStartPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_stream_start_packet"));
+        public static final PacketCodec<RegistryByteBuf, ServerStreamStartPayload> CODEC = PacketCodec.of(
                 (payload, buf) -> buf.writeString(payload.streamUrl),
-                buf -> new ServerStreamStopPayload(buf.readString())
+                buf -> new ServerStreamStartPayload(buf.readString())
         );
 
         @Override
@@ -186,11 +186,11 @@ public class NetworkConstants {
         }
     }
 
-    public record ServerStreamStartPayload(String streamUrl) implements CustomPayload {
-        public static final Id<ServerStreamStartPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_stream_start_packet"));
-        public static final PacketCodec<RegistryByteBuf, ServerStreamStartPayload> CODEC = PacketCodec.of(
+    public record ServerStreamStopPayload(String streamUrl) implements CustomPayload {
+        public static final Id<ServerStreamStopPayload> ID = new Id<>(Identifier.of(MOD_ID, "server_stream_stop_packet"));
+        public static final PacketCodec<RegistryByteBuf, ServerStreamStopPayload> CODEC = PacketCodec.of(
                 (payload, buf) -> buf.writeString(payload.streamUrl),
-                buf -> new ServerStreamStartPayload(buf.readString())
+                buf -> new ServerStreamStopPayload(buf.readString())
         );
 
         @Override

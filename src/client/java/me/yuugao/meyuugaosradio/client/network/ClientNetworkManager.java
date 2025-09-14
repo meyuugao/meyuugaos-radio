@@ -62,11 +62,11 @@ public class ClientNetworkManager {
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerOpenSpeakerGuiPayload.ID, (payload, context) ->
                 context.client().execute(() -> MinecraftClient.getInstance().setScreen(new SpeakerGuiScreen(payload.pos(), payload.volume()))));
 
-        ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerStreamStopPayload.ID, (payload, context) ->
-                context.client().execute(() -> ClientHlsAudioManager.handleStreamStop(payload.streamUrl())));
-
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerStreamStartPayload.ID, (payload, context) ->
                 context.client().execute(() -> ClientHlsAudioManager.handleStreamStart(payload.streamUrl())));
+        
+        ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerStreamStopPayload.ID, (payload, context) ->
+                context.client().execute(() -> ClientHlsAudioManager.handleStreamStop(payload.streamUrl())));
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerVolumeUpdatePayload.ID, (payload, context) ->
                 context.client().execute(() -> ClientHlsAudioManager.handleVolumeUpdate(payload.streamUrl(), payload.volume())));
