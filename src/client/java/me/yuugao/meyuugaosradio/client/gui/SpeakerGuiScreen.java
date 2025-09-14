@@ -1,4 +1,3 @@
-
 package me.yuugao.meyuugaosradio.client.gui;
 
 import static me.yuugao.meyuugaosradio.Constants.SPEAKER_VOLUME_MULTIPLIER;
@@ -7,8 +6,6 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -36,8 +33,7 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        super.render(context, textRenderer, mouseX, mouseY, delta);
+        super.render(context);
     }
 
     @Override
