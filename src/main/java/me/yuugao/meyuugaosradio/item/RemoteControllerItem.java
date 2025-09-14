@@ -1,18 +1,18 @@
 package me.yuugao.meyuugaosradio.item;
 
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_CAPACITY;
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_USAGE;
+
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -27,50 +27,38 @@ import net.minecraft.world.World;
 import java.util.List;
 
 public class RemoteControllerItem extends Item {
+    private final EnergyItemHandler energyItemHandler;
+
     @FunctionalInterface
     private interface BlockInteractionHandler {
         void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
     }
 
-    private static final long CAPACITY = 10_000L;
-    private static final long USAGE = 10L;
-
     public RemoteControllerItem(Settings settings) {
         super(settings);
+
+        this.energyItemHandler = new EnergyItemHandler(REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE);
     }
 
     @Override
     public ItemStack getDefaultStack() {
         ItemStack stack = super.getDefaultStack();
-        setupEnergyComponents(stack);
-        return stack;
-    }
+        energyItemHandler.setupEnergyComponents(stack);
 
-    private void setupEnergyComponents(ItemStack stack) {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putLong("Energy", 0);
-        nbt.putLong("Capacity", CAPACITY);
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        return stack;
     }
 
     @Override
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
 
-        long energy = getEnergy(stack);
-        long capacity = getCapacity(stack);
-
-        MutableText energyText = Text.literal("").append(Text.translatable("tooltip.energy").formatted(Formatting.GRAY)).append(Text.literal(String.format(" %d/%d E", energy, capacity)).formatted(Formatting.GOLD));
-
-        MutableText usageText = Text.literal("").append(Text.translatable("tooltip.usage").formatted(Formatting.GRAY)).append(Text.literal(String.format(" %d E/", USAGE)).append(Text.translatable("tooltip.usage.usesuffix")).formatted(Formatting.GOLD));
-
-        tooltip.add(energyText);
-        tooltip.add(usageText);
+        energyItemHandler.appendTooltip(stack, tooltip);
     }
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         onRightClick(world, user);
+
         return TypedActionResult.success(user.getStackInHand(hand));
     }
 
@@ -86,12 +74,13 @@ public class RemoteControllerItem extends Item {
         if (!world.isClient() && !user.isSneaking() && user instanceof ServerPlayerEntity serverPlayerEntity) {
             ItemStack stack = user.getMainHandStack();
 
-            if (getEnergy(stack) < USAGE) {
+            if (energyItemHandler.getEnergy(stack) < energyItemHandler.getUsage(stack)) {
                 sendNotEnoughEnergyMessage(user);
+
                 return;
             }
 
-            removeEnergy(stack, USAGE);
+            energyItemHandler.removeEnergy(stack, energyItemHandler.getUsage(stack));
             BlockHitResult hit = raycastFromPlayer(user);
 
             if (hit.getType() == HitResult.Type.BLOCK) {
@@ -100,9 +89,11 @@ public class RemoteControllerItem extends Item {
 
                 if (state.getBlock() instanceof AbstractEnergyBlock abstractEnergyBlock) {
                     interactionHandler.handle(abstractEnergyBlock, world, pos, serverPlayerEntity);
+
                     return;
                 }
             }
+
             if (shouldResetRender) {
                 ServerNetworkManager.sendServerGlowClearPacket(serverPlayerEntity);
             }
@@ -111,7 +102,8 @@ public class RemoteControllerItem extends Item {
 
     private void sendNotEnoughEnergyMessage(PlayerEntity user) {
         if (user instanceof ServerPlayerEntity serverPlayerEntity) {
-            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity, Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
+            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity,
+                    Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
         }
     }
 
@@ -135,28 +127,7 @@ public class RemoteControllerItem extends Item {
         return 0f;
     }
 
-    public long getCapacity(ItemStack stack) {
-        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-        return nbtComponent != null ? nbtComponent.copyNbt().getLong("Capacity") : CAPACITY;
-    }
-
-    public long getEnergy(ItemStack stack) {
-        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-        return nbtComponent != null ? nbtComponent.copyNbt().getLong("Energy") : 0;
-    }
-
-    public void setEnergy(ItemStack stack, long energy) {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putLong("Energy", Math.min(energy, getCapacity(stack)));
-        nbt.putLong("Capacity", getCapacity(stack));
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
-    }
-
-    public void addEnergy(ItemStack stack, long amount) {
-        setEnergy(stack, getEnergy(stack) + amount);
-    }
-
-    public void removeEnergy(ItemStack stack, long amount) {
-        setEnergy(stack, Math.max(0, getEnergy(stack) - amount));
+    public EnergyItemHandler getEnergyItemHandler() {
+        return energyItemHandler;
     }
 }

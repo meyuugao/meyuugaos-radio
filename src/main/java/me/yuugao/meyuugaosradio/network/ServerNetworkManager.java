@@ -22,6 +22,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
 public class ServerNetworkManager {
@@ -140,11 +142,12 @@ public class ServerNetworkManager {
                 activeRadioBlockEntity = (RadioBlockEntity) world.getBlockEntity(blockPos);
             }
         }
-        if (speakerBlockEntity == null || activeRadioBlockEntity == null) return;
+        if (speakerBlockEntity == null || activeRadioBlockEntity == null || world.getServer() == null) return;
 
         if (speakerBlockEntity.getRadioPos() == null) {
-            if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+            if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar")
+                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
                 return;
             }
 
@@ -157,7 +160,8 @@ public class ServerNetworkManager {
                 speakerBlockEntity.disconnectRadio();
                 activeRadioBlockEntity.disconnectSpeaker(speakerBlockEntity.getPos());
             } else {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected")
+                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
             }
         }
     }
@@ -205,7 +209,7 @@ public class ServerNetworkManager {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             abstractEnergyBlockEntity.setVolume(volume);
-            String streamUrl = "";
+            String streamUrl = StringUtils.EMPTY;
             if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
                 streamUrl = radioBlockEntity.getStreamUrl();
             } else if (abstractEnergyBlockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {

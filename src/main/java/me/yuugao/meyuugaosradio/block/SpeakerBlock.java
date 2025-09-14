@@ -22,8 +22,8 @@ import net.minecraft.world.World;
 import com.mojang.serialization.MapCodec;
 
 public class SpeakerBlock extends AbstractEnergyBlock {
-    public SpeakerBlock() {
-        super();
+    public SpeakerBlock(Settings settings) {
+        super(settings);
     }
 
     @Override
@@ -46,18 +46,20 @@ public class SpeakerBlock extends AbstractEnergyBlock {
 
     @Override
     public void glow(World world, BlockPos pos, ServerPlayerEntity player) {
-        if (!world.isClient()) {
-            ServerNetworkManager.sendServerRequestBlocks(player, pos);
-        }
+        if (world.isClient()) return;
+
+        ServerNetworkManager.sendServerRequestBlocks(player, pos);
     }
 
     public void onEnabled(World world, BlockPos pos, BlockState state) {
         super.onEnabled(world, pos, state);
+
         if (world.getBlockEntity(pos) instanceof SpeakerBlockEntity speakerBlockEntity) {
             if (speakerBlockEntity.getRadioPos() != null) {
                 BlockEntity blockEntity = world.getBlockEntity(speakerBlockEntity.getRadioPos());
                 if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty()) {
-                    ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), pos, this.getVecDirection(world, pos), speakerBlockEntity.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+                    ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), pos, this.getVecDirection(world, pos),
+                            speakerBlockEntity.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
                 }
             }
         }
@@ -66,6 +68,7 @@ public class SpeakerBlock extends AbstractEnergyBlock {
     @Override
     public void onDisabled(World world, BlockPos pos, BlockState state) {
         super.onDisabled(world, pos, state);
+
         if (world.getBlockEntity(pos) instanceof SpeakerBlockEntity speakerBlockEntity) {
             if (speakerBlockEntity.getRadioPos() != null) {
                 BlockEntity blockEntity1 = world.getBlockEntity(speakerBlockEntity.getRadioPos());
@@ -81,7 +84,9 @@ public class SpeakerBlock extends AbstractEnergyBlock {
     @Override
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         super.onBreak(world, pos, state, player);
+
         this.globalUnbind(player, world, pos);
+
         return state;
     }
 

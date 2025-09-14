@@ -1,5 +1,9 @@
 package me.yuugao.meyuugaosradio.entity;
 
+import static me.yuugao.meyuugaosradio.Constants.RADIO_ENERGY_CAPACITY;
+import static me.yuugao.meyuugaosradio.Constants.RADIO_ENERGY_USAGE;
+
+
 import me.yuugao.meyuugaosradio.Radio;
 
 import net.minecraft.block.BlockState;
@@ -9,20 +13,26 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class RadioBlockEntity extends AbstractEnergyBlockEntity {
-    private final List<BlockPos> speakers = new ArrayList<>();
-    private String streamUrl = "";
+    private final List<BlockPos> speakers;
+    private String streamUrl;
 
     public RadioBlockEntity(BlockPos pos, BlockState state) {
-        super(Radio.RADIO_BLOCK_ENTITY, pos, state, 100_000L, 8L);
+        super(Radio.RADIO_BLOCK_ENTITY, pos, state, RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE);
+
+        this.speakers = new ArrayList<>();
+        this.streamUrl = StringUtils.EMPTY;
     }
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
+
         NbtList list = new NbtList();
         for (BlockPos pos : speakers) {
             NbtCompound posCompound = new NbtCompound();
