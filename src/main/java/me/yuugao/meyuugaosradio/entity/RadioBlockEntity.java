@@ -47,7 +47,7 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
         super.readNbt(nbt);
 
         if (nbt.contains("Speakers", NbtElement.LIST_TYPE)) {
-            NbtList list = nbt.getList("Speakers", NbtElement.LIST_TYPE);
+            NbtList list = nbt.getList("Speakers", NbtElement.COMPOUND_TYPE);
             speakers.clear();
             for (int i = 0; i < list.size(); i++) {
                 NbtCompound compound = list.getCompound(i);
