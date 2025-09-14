@@ -7,7 +7,6 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -156,7 +155,7 @@ public class RadioGuiScreen extends BaseGuiScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, textRenderer, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
 
         if (currentTime - lastCursorTime > 500) {
             cursorVisible = !cursorVisible;
@@ -169,7 +168,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                 TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT,
                 TEXT_FIELD_WIDTH, TEXT_FIELD_HEIGHT);
 
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         int textX = x + TEXT_FIELD_X1 + 2;
         int textY = y + TEXT_FIELD_Y1;
 
@@ -236,7 +234,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
     }
 
     private void updateTextOffset() {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         String textBeforeCursor = streamUrl.substring(0, cursorPosition);
         int textWidth = textRenderer.getWidth(textBeforeCursor);
         if (textWidth - textOffset > TEXT_FIELD_BORDER_WIDTH - 4) {
