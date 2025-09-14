@@ -31,6 +31,9 @@ public class BlockGlowRenderer {
     private static final Map<BlockPos, GlowInfo> blocksToRender = new HashMap<>();
     private static boolean enabled = false;
 
+    public record GlowInfo(float r, float g, float b, float a) {
+    }
+
     public static void onDisconnect() {
         clearAll();
         setEnabled(false);
@@ -102,8 +105,5 @@ public class BlockGlowRenderer {
             buffer.vertex(matrix4f, x + 1 + offset, y + 1, z + 1).color(glow.r(), glow.g(), glow.b(), glow.a());
             buffer.vertex(matrix4f, x + 1 + offset, y, z + 1).color(glow.r(), glow.g(), glow.b(), glow.a());
         });
-    }
-
-    public record GlowInfo(float r, float g, float b, float a) {
     }
 }
