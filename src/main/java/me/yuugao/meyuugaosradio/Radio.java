@@ -89,7 +89,7 @@ public class Radio implements ModInitializer {
 
     private void registerItems() {
         REMOTE_CONTROLLER_ITEM = (RemoteControllerItem) registerItem(REMOTE_CONTROLLER_ID, settings ->
-                new RemoteControllerItem(settings, REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE),
+                        new RemoteControllerItem(settings, REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE),
                 new Item.Settings().maxCount(REMOTE_CONTROLLER_STACK_SIZE));
         ELECTRONIC_CIRCUIT_ITEM = registerItem(ELECTRONIC_CIRCUIT_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
         BATTERY_ITEM = registerItem(BATTERY_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));

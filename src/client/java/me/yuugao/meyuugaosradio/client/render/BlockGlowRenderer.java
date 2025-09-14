@@ -22,39 +22,7 @@ public class BlockGlowRenderer {
     private static VertexBuffer vertexBuffer;
     private static boolean enabled = false;
 
-    public static void onDisconnect() {
-        clearAll();
-        setEnabled(false);
-    }
-
-    public static void setEnabled(boolean state) {
-        enabled = state;
-    }
-
-    public static boolean isEnabled() {
-        return enabled;
-    }
-
-    public static Map<BlockPos, GlowInfo> getBlocks() {
-        return blocksToRender;
-    }
-
-    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
-        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
-        rebuildVertexBuffer();
-    }
-
-    public static void removeBlock(BlockPos pos) {
-        blocksToRender.remove(pos.toImmutable());
-        rebuildVertexBuffer();
-    }
-
-    public static void clearAll() {
-        blocksToRender.clear();
-        if (vertexBuffer != null) {
-            vertexBuffer.close();
-            vertexBuffer = null;
-        }
+    public record GlowInfo(float r, float g, float b, float a) {
     }
 
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
@@ -133,6 +101,38 @@ public class BlockGlowRenderer {
         buffer.vertex(x + 1 + offset, y, z + 1).color(r, g, b, a);
     }
 
-    public record GlowInfo(float r, float g, float b, float a) {
+    public static void onDisconnect() {
+        clearAll();
+        setEnabled(false);
+    }
+
+    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
+        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
+        rebuildVertexBuffer();
+    }
+
+    public static void removeBlock(BlockPos pos) {
+        blocksToRender.remove(pos.toImmutable());
+        rebuildVertexBuffer();
+    }
+
+    public static void clearAll() {
+        blocksToRender.clear();
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
+    }
+
+    public static Map<BlockPos, GlowInfo> getBlocksToRender() {
+        return blocksToRender;
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    public static void setEnabled(boolean state) {
+        enabled = state;
     }
 }

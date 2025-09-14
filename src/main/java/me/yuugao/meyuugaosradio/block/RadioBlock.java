@@ -64,7 +64,7 @@ public class RadioBlock extends AbstractEnergyBlock {
             if (!streamUrl.isEmpty()) {
                 radioBlockEntity.setStreamUrl(streamUrl);
             }
-            
+
             String currentStreamUrl = radioBlockEntity.getStreamUrl();
             if (!currentStreamUrl.isEmpty()) {
                 ServerHlsAudioManager.addSoundSource(currentStreamUrl, pos, this.getVecDirection(world, pos),
