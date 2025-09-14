@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ServerHlsAudioManager {
     private static final Map<String, ServerAudioInstance> audioInstances = new ConcurrentHashMap<>();
@@ -24,23 +25,22 @@ public class ServerHlsAudioManager {
         allPlayers.entrySet().removeIf(entry ->
                 entry.getValue().player == null || entry.getValue().player.isDisconnected());
 
-        for (WorldPlayerInfo playerInfo : allPlayers.values()) {
-            ServerPlayerEntity player = playerInfo.player;
+        allPlayers.values().forEach(worldPlayerInfo -> {
+            ServerPlayerEntity player = worldPlayerInfo.player;
             if (player != null && !player.isDisconnected()) {
-                for (ServerAudioInstance audioInstance : audioInstances.values()) {
-                    if (audioInstance.worldRegistryKey.equals(playerInfo.worldRegistryKey)) {
-                        float volume = audioInstance.calculateVolumeForPlayer(player.getWorld(), player);
-                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, audioInstance.streamUrl, volume);
+                audioInstances.values().forEach(serverAudioInstance -> {
+                    if (serverAudioInstance.worldRegistryKey.equals(worldPlayerInfo.worldRegistryKey)) {
+                        float volume = serverAudioInstance.calculateVolumeForPlayer(player.getWorld(), player);
+                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, serverAudioInstance.streamUrl, volume);
                     }
-                }
+                });
             }
-        }
+        });
     }
 
     private static void updatePlayersList(List<ServerPlayerEntity> currentWorldPlayers) {
-        for (ServerPlayerEntity player : currentWorldPlayers) {
-            allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getWorld().getRegistryKey()));
-        }
+        currentWorldPlayers.forEach(player ->
+                allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getWorld().getRegistryKey())));
     }
 
     public static class ServerSoundSource {
@@ -60,13 +60,14 @@ public class ServerHlsAudioManager {
     }
 
     public static class ServerAudioInstance {
-        public final String streamUrl;
-        public final Object worldRegistryKey;
-        private final Map<BlockPos, ServerSoundSource> soundSources = new ConcurrentHashMap<>();
+        private final String streamUrl;
+        private final Object worldRegistryKey;
+        private final Map<BlockPos, ServerSoundSource> soundSources;
 
         public ServerAudioInstance(String streamUrl, Object worldRegistryKey) {
             this.streamUrl = streamUrl;
             this.worldRegistryKey = worldRegistryKey;
+            this.soundSources = new ConcurrentHashMap<>();
         }
 
         public void addSoundSource(BlockPos pos, Vec3d direction, float volumeMultiplier, float maxRange, Object worldRegistryKey) {
@@ -80,14 +81,16 @@ public class ServerHlsAudioManager {
             ));
 
             if (wasEmpty) {
-                sendToWorldPlayers(player -> ServerNetworkManager.sendServerStreamStartPacket(player, streamUrl), worldRegistryKey);
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStartPacket(player, streamUrl), worldRegistryKey);
             }
         }
 
         public void removeSoundSource(BlockPos pos) {
             ServerSoundSource removed = soundSources.remove(pos);
             if (soundSources.isEmpty() && removed != null) {
-                sendToWorldPlayers(player -> ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), removed.worldRegistryKey);
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), removed.worldRegistryKey);
             }
         }
 
@@ -110,12 +113,11 @@ public class ServerHlsAudioManager {
         }
 
         private void sendToWorldPlayers(java.util.function.Consumer<ServerPlayerEntity> action, Object worldKey) {
-            for (WorldPlayerInfo playerInfo : allPlayers.values()) {
-                if (playerInfo.player != null && !playerInfo.player.isDisconnected() &&
-                        playerInfo.worldRegistryKey.equals(worldKey)) {
-                    action.accept(playerInfo.player);
+            allPlayers.values().forEach(worldPlayerInfo -> {
+                if (worldPlayerInfo.player != null && !worldPlayerInfo.player.isDisconnected() && worldPlayerInfo.worldRegistryKey.equals(worldKey)) {
+                    action.accept(worldPlayerInfo.player);
                 }
-            }
+            });
         }
 
         public float calculateVolumeForPlayer(World world, ServerPlayerEntity player) {
@@ -124,36 +126,36 @@ public class ServerHlsAudioManager {
             }
 
             Vec3d playerPos = player.getPos().add(0, player.getEyeHeight(player.getPose()), 0);
-            float totalVolume = 0.0f;
+            AtomicReference<Float> totalVolume = new AtomicReference<>(0.0f);
 
-            for (ServerSoundSource soundSource : soundSources.values()) {
-                if (!soundSource.worldRegistryKey.equals(world.getRegistryKey())) {
-                    continue;
+            soundSources.values().forEach(serverSoundSource -> {
+                if (!serverSoundSource.worldRegistryKey.equals(world.getRegistryKey())) {
+                    return;
                 }
 
-                Vec3d toPlayer = playerPos.subtract(soundSource.position);
+                Vec3d toPlayer = playerPos.subtract(serverSoundSource.position);
                 double distance = toPlayer.length();
 
-                if (distance > soundSource.maxRange) {
-                    continue;
+                if (distance > serverSoundSource.maxRange) {
+                    return;
                 }
 
                 float distanceFactor = (float) (1.0 / (1.0 + distance * 0.5));
-                distanceFactor *= (1.0f - (float) (distance / soundSource.maxRange));
+                distanceFactor *= (1.0f - (float) (distance / serverSoundSource.maxRange));
 
-                float obstructionFactor = calculateObstructionFactor(soundSource.position, playerPos, world, soundSource.direction);
+                float obstructionFactor = calculateObstructionFactor(serverSoundSource.position, playerPos, world, serverSoundSource.direction);
 
                 Vec3d toPlayerNormalized = toPlayer.normalize();
-                float dotProduct = (float) soundSource.direction.dotProduct(toPlayerNormalized);
+                float dotProduct = (float) serverSoundSource.direction.dotProduct(toPlayerNormalized);
                 float directionFactor = (dotProduct + 1.0f) / 2.0f;
                 float coneWidth = 0.4f;
                 directionFactor = (float) Math.pow(directionFactor, coneWidth);
 
-                float sourceVolume = soundSource.volume * distanceFactor * obstructionFactor * directionFactor;
-                totalVolume += sourceVolume;
-            }
+                float sourceVolume = serverSoundSource.volume * distanceFactor * obstructionFactor * directionFactor;
+                totalVolume.updateAndGet(v -> v + sourceVolume);
+            });
 
-            return Math.min(totalVolume, 1.0f);
+            return Math.min(totalVolume.get(), 1.0f);
         }
 
         private float calculateObstructionFactor(Vec3d source, Vec3d target, World world, Vec3d direction) {
@@ -201,8 +203,7 @@ public class ServerHlsAudioManager {
         }
 
         private boolean shouldSuppress(World world, BlockState state) {
-            if (state.isAir()) return false;
-            return !state.getCollisionShape(world, BlockPos.ORIGIN).isEmpty();
+            return !state.isAir() && !state.getCollisionShape(world, BlockPos.ORIGIN).isEmpty();
         }
 
         public boolean hasSources() {
@@ -221,17 +222,17 @@ public class ServerHlsAudioManager {
         String instanceKey = streamUrl + "_" + worldRegistryKey;
         ServerAudioInstance audioInstance = audioInstances.remove(instanceKey);
         if (audioInstance != null && audioInstance.hasSources()) {
-            sendToWorldPlayers(player -> ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), worldRegistryKey);
+            sendToWorldPlayers(player ->
+                    ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), worldRegistryKey);
         }
     }
 
     private static void sendToWorldPlayers(java.util.function.Consumer<ServerPlayerEntity> action, Object worldKey) {
-        for (WorldPlayerInfo playerInfo : allPlayers.values()) {
-            if (playerInfo.player != null && !playerInfo.player.isDisconnected() &&
-                    playerInfo.worldRegistryKey.equals(worldKey)) {
-                action.accept(playerInfo.player);
+        allPlayers.values().forEach(worldPlayerInfo -> {
+            if (worldPlayerInfo.player != null && !worldPlayerInfo.player.isDisconnected() && worldPlayerInfo.worldRegistryKey.equals(worldKey)) {
+                action.accept(worldPlayerInfo.player);
             }
-        }
+        });
     }
 
     public static ServerAudioInstance getAudioInstance(String streamUrl, Object worldRegistryKey) {
@@ -241,6 +242,7 @@ public class ServerHlsAudioManager {
 
     public static void addSoundSource(String streamUrl, BlockPos pos, Vec3d direction, float volume, float maxRange, Object worldRegistryKey) {
         createAudioInstance(streamUrl, worldRegistryKey);
+
         ServerAudioInstance instance = getAudioInstance(streamUrl, worldRegistryKey);
         if (instance != null) {
             instance.addSoundSource(pos, direction, volume, maxRange, worldRegistryKey);
@@ -272,9 +274,10 @@ public class ServerHlsAudioManager {
     }
 
     public static void stopAllAudioInstances() {
-        for (ServerAudioInstance audioInstance : audioInstances.values()) {
-            sendToWorldPlayers(player -> ServerNetworkManager.sendServerStreamStopPacket(player, audioInstance.streamUrl), audioInstance.worldRegistryKey);
-        }
+        audioInstances.values().forEach(serverAudioInstance ->
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStopPacket(player, serverAudioInstance.streamUrl), serverAudioInstance.worldRegistryKey));
+
         audioInstances.clear();
     }
 
@@ -283,11 +286,13 @@ public class ServerHlsAudioManager {
         while (iterator.hasNext()) {
             Map.Entry<String, ServerAudioInstance> entry = iterator.next();
             if (entry.getValue().worldRegistryKey.equals(worldRegistryKey)) {
-                sendToWorldPlayers(player -> ServerNetworkManager.sendServerStreamStopPacket(player, entry.getValue().streamUrl), worldRegistryKey);
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStopPacket(player, entry.getValue().streamUrl), worldRegistryKey);
                 iterator.remove();
             }
         }
 
-        allPlayers.entrySet().removeIf(entry -> entry.getValue().worldRegistryKey.equals(worldRegistryKey));
+        allPlayers.entrySet().removeIf(entry ->
+                entry.getValue().worldRegistryKey.equals(worldRegistryKey));
     }
 }

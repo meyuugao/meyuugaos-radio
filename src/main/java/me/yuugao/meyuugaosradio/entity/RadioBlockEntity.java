@@ -31,16 +31,16 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-
         NbtList list = new NbtList();
-        for (BlockPos pos : speakers) {
+        speakers.forEach(speakerPos -> {
             NbtCompound posCompound = new NbtCompound();
-            posCompound.putIntArray("pos", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+            posCompound.putIntArray("pos", new int[]{speakerPos.getX(), speakerPos.getY(), speakerPos.getZ()});
             list.add(posCompound);
-        }
+        });
         nbt.put("Speakers", list);
         nbt.putString("StreamUrl", streamUrl);
+
+        super.writeNbt(nbt, registryLookup);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
         super.readNbt(nbt, registryLookup);
 
         if (nbt.contains("Speakers", NbtElement.LIST_TYPE)) {
-            NbtList list = nbt.getList("Speakers", NbtElement.COMPOUND_TYPE);
+            NbtList list = nbt.getList("Speakers", NbtElement.LIST_TYPE);
             speakers.clear();
             for (int i = 0; i < list.size(); i++) {
                 NbtCompound compound = list.getCompound(i);

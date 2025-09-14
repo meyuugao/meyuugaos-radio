@@ -48,7 +48,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     this.streamUrl = this.streamUrl.substring(0, this.streamUrl.length() - 9) + "aac_hifi.m3u8";
                 }
                 ClientNetworkManager.sendClientRadioStateSwitchPacket(this.pos, this.streamUrl);
-
                 return true;
             }
 
@@ -62,7 +61,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                 lastCursorTime = System.currentTimeMillis();
                 cursorPosition = streamUrl.length();
                 updateTextOffset();
-
                 return true;
             }
         }
@@ -75,7 +73,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
         if (textFieldFocused) {
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 textFieldFocused = false;
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
                 if (!streamUrl.isEmpty() && cursorPosition > 0) {
@@ -89,7 +86,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     }
                     updateTextOffset();
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 if (cursorPosition < streamUrl.length()) {
@@ -101,7 +97,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     }
                     updateTextOffset();
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
                 if (cursorPosition > 0) {
@@ -112,7 +107,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     }
                     updateTextOffset();
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
                 if (cursorPosition < streamUrl.length()) {
@@ -123,17 +117,14 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     }
                     updateTextOffset();
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_HOME) {
                 cursorPosition = 0;
                 updateTextOffset();
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_END) {
                 cursorPosition = streamUrl.length();
                 updateTextOffset();
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
                 String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
@@ -142,7 +133,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     cursorPosition += clipboard.length();
                     updateTextOffset();
                 }
-
                 return true;
             }
         }
@@ -157,7 +147,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
                 streamUrl = streamUrl.substring(0, cursorPosition) + chr + streamUrl.substring(cursorPosition);
                 cursorPosition++;
                 updateTextOffset();
-
                 return true;
             }
         }
@@ -253,9 +242,11 @@ public class RadioGuiScreen extends BaseGuiScreen {
         if (textWidth - textOffset > TEXT_FIELD_BORDER_WIDTH - 4) {
             textOffset = textWidth - TEXT_FIELD_BORDER_WIDTH + 4;
         }
+
         if (textWidth - textOffset < 0) {
             textOffset = textWidth;
         }
+
         textOffset = Math.max(0, textOffset);
     }
 

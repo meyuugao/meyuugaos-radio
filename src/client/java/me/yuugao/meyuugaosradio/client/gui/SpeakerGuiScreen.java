@@ -26,7 +26,6 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
             if (mouseX >= buttonX && mouseX <= buttonX + SPEAKER_BUTTON_WIDTH &&
                     mouseY >= buttonY && mouseY <= buttonY + SPEAKER_BUTTON_HEIGHT) {
                 ClientNetworkManager.sendClientSpeakerStateSwitchPacket(this.pos);
-
                 return true;
             }
         }
@@ -37,7 +36,6 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
         super.render(context, textRenderer, mouseX, mouseY, delta);
     }
 

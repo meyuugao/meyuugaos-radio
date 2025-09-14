@@ -29,6 +29,7 @@ public class EnergyBlockItem extends BlockItem {
     @Override
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
+
         energyItemHandler.appendTooltip(stack, tooltip);
     }
 }

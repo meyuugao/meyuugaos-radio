@@ -29,8 +29,8 @@ public class ClientHlsAudioManager {
 
     public static void handleVolumeUpdate(String streamUrl, float volume) {
         float finalVolume = volume * MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER) * ClientModConfigManager.getConfig().volume / 100;
-        ClientAudioInstance instance = audioInstances.get(streamUrl);
 
+        ClientAudioInstance instance = audioInstances.get(streamUrl);
         if (instance != null) {
             instance.setVolume(finalVolume);
 
@@ -55,15 +55,16 @@ public class ClientHlsAudioManager {
     }
 
     public static void handleStreamStop(String streamUrl) {
-        ClientAudioInstance instance = audioInstances.remove(streamUrl);
         startingStreams.remove(streamUrl);
+
+        ClientAudioInstance instance = audioInstances.remove(streamUrl);
         if (instance != null) {
             instance.stopStream();
         }
     }
 
     private static void detectAndStartStream(String streamUrl) {
-        AtomicBoolean isStarting = startingStreams.computeIfAbsent(streamUrl, k -> new AtomicBoolean(false));
+        AtomicBoolean isStarting = startingStreams.computeIfAbsent(streamUrl, key -> new AtomicBoolean(false));
 
         if (!isStarting.compareAndSet(false, true)) {
             return;
@@ -102,7 +103,6 @@ public class ClientHlsAudioManager {
                     audioInstances.put(streamUrl, instance);
                     instance.startStream();
                 }
-
             } catch (Exception ignored) {
             } finally {
                 startingStreams.remove(streamUrl);
@@ -121,10 +121,10 @@ public class ClientHlsAudioManager {
         private Process ffmpegProcess;
         private Thread playbackThread;
         private Thread readThread;
-        private volatile boolean stopRequested = false;
+        private volatile boolean stopRequested;
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
-        private float currentVolume = 0.0f;
+        private float currentVolume;
 
         public ClientAudioInstance(String streamUrl, int sampleRate, int channels) {
             this.streamUrl = streamUrl;
@@ -133,6 +133,8 @@ public class ClientHlsAudioManager {
             this.isPlaying = new AtomicBoolean(false);
             this.isStarting = new AtomicBoolean(false);
             this.audioQueue = new LinkedBlockingQueue<>(30);
+            this.stopRequested = false;
+            this.currentVolume = 0.0f;
         }
 
         public void startStream() {
