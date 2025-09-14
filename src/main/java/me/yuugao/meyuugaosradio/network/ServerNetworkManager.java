@@ -37,8 +37,8 @@ public class ServerNetworkManager {
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerPlayerSendMessagePayload.ID, NetworkConstants.ServerPlayerSendMessagePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerOpenRadioGuiPayload.ID, NetworkConstants.ServerOpenRadioGuiPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerOpenSpeakerGuiPayload.ID, NetworkConstants.ServerOpenSpeakerGuiPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerStreamStopPayload.ID, NetworkConstants.ServerStreamStopPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerStreamStartPayload.ID, NetworkConstants.ServerStreamStartPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerStreamStopPayload.ID, NetworkConstants.ServerStreamStopPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerVolumeUpdatePayload.ID, NetworkConstants.ServerVolumeUpdatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(NetworkConstants.ServerGlowClearPayload.ID, NetworkConstants.ServerGlowClearPayload.CODEC);
 
