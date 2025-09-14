@@ -13,15 +13,18 @@ import net.minecraft.util.math.BlockPos;
 import team.reborn.energy.api.EnergyStorage;
 
 public abstract class AbstractEnergyBlockEntity extends BlockEntity implements EnergyStorage {
-    protected long energy = 0;
+    protected long energy;
     protected final long capacity;
     protected final long usage;
-    protected float volume = 0.5f;
+    protected float volume;
 
     public AbstractEnergyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, long capacity, long usage) {
         super(type, pos, state);
+
+        this.energy = 0L;
         this.capacity = capacity;
         this.usage = usage;
+        this.volume = 0.5f;
     }
 
     @Override
@@ -30,14 +33,16 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
         nbt.putLong("Capacity", capacity);
         nbt.putLong("Usage", usage);
         nbt.putFloat("Volume", volume);
+
         super.writeNbt(nbt);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
-        this.energy = nbt.getLong("Energy");
-        this.volume = nbt.getFloat("Volume");
+
+        this.energy = nbt.contains("Energy") ? nbt.getLong("Energy") : 0L;
+        this.volume = nbt.contains("Volume") ? nbt.getFloat("Volume") : volume;
     }
 
     public boolean isEnabled() {
@@ -48,7 +53,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
     public long insert(long maxAmount, TransactionContext transaction) {
         long inserted = Math.min(maxAmount, capacity - energy);
 
-        transaction.addCloseCallback((t, result) -> {
+        transaction.addCloseCallback((context, result) -> {
             if (result.wasCommitted()) {
                 energy += inserted;
                 markDirty();
@@ -60,7 +65,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
 
     @Override
     public long extract(long maxAmount, TransactionContext transaction) {
-        return 0;
+        return 0L;
     }
 
     @Override
@@ -92,6 +97,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
             markDirty();
             return true;
         }
+
         return false;
     }
 

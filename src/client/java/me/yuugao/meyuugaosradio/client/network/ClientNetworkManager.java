@@ -31,19 +31,18 @@ public class ClientNetworkManager {
             for (int i = 0; i < count; i++) {
                 speakers.add(buf.readBlockPos());
             }
-
             client.execute(() -> clientRadioUse(radioPos, speakers));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SERVER_REQUEST_BLOCKS_PACKET, (client, handler, buf, responseSender) -> {
             BlockPos speakerPos = buf.readBlockPos();
-            client.execute(() -> sendClientBlocksUpdatePacket(BlockGlowRenderer.isEnabled(), BlockGlowRenderer.getBlocks().keySet(), speakerPos));
+            client.execute(() -> sendClientBlocksUpdatePacket(BlockGlowRenderer.isEnabled(), BlockGlowRenderer.getBlocksToRender().keySet(), speakerPos));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SERVER_RADIO_GLOBALUNBIND_PACKET, (client, handler, buf, responseSender) -> {
             BlockPos radioPos = buf.readBlockPos();
             client.execute(() -> {
-                if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocks().containsKey(radioPos)) {
+                if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocksToRender().containsKey(radioPos)) {
                     BlockGlowRenderer.clearAll();
                     BlockGlowRenderer.setEnabled(false);
                 }
@@ -53,7 +52,7 @@ public class ClientNetworkManager {
         ClientPlayNetworking.registerGlobalReceiver(SERVER_SPEAKER_GLOBALUNBIND_PACKET, (client, handler, buf, responseSender) -> {
             BlockPos pos = buf.readBlockPos();
             client.execute(() -> {
-                if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocks().containsKey(pos)) {
+                if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocksToRender().containsKey(pos)) {
                     BlockGlowRenderer.removeBlock(pos);
                 }
             });
@@ -96,14 +95,14 @@ public class ClientNetworkManager {
             client.execute(() -> MinecraftClient.getInstance().setScreen(new SpeakerGuiScreen(pos, volume)));
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(SERVER_STREAM_STOP_PACKET, (client, handler, buf, responseSender) -> {
-            String streamUrl = buf.readString();
-            client.execute(() -> ClientHlsAudioManager.handleStreamStop(streamUrl));
-        });
-
         ClientPlayNetworking.registerGlobalReceiver(SERVER_STREAM_START_PACKET, (client, handler, buf, responseSender) -> {
             String streamUrl = buf.readString();
             client.execute(() -> ClientHlsAudioManager.handleStreamStart(streamUrl));
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SERVER_STREAM_STOP_PACKET, (client, handler, buf, responseSender) -> {
+            String streamUrl = buf.readString();
+            client.execute(() -> ClientHlsAudioManager.handleStreamStop(streamUrl));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SERVER_VOLUME_UPDATE_PACKET, (client, handler, buf, responseSender) -> {
@@ -119,21 +118,19 @@ public class ClientNetworkManager {
 
     private static void clientRadioUse(BlockPos radioPos, List<BlockPos> speakers) {
         if (BlockGlowRenderer.isEnabled()) {
-            if (BlockGlowRenderer.getBlocks().containsKey(radioPos)) {
+            if (BlockGlowRenderer.getBlocksToRender().containsKey(radioPos)) {
                 BlockGlowRenderer.clearAll();
                 BlockGlowRenderer.setEnabled(false);
             } else {
                 BlockGlowRenderer.clearAll();
                 BlockGlowRenderer.addBlock(radioPos, RADIO_COLOR[0], RADIO_COLOR[1], RADIO_COLOR[2], RADIO_COLOR[3]);
-                for (BlockPos speakerPos : speakers) {
-                    BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]);
-                }
+                speakers.forEach(speakerPos ->
+                        BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]));
             }
         } else {
             BlockGlowRenderer.addBlock(radioPos, RADIO_COLOR[0], RADIO_COLOR[1], RADIO_COLOR[2], RADIO_COLOR[3]);
-            for (BlockPos speakerPos : speakers) {
-                BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]);
-            }
+            speakers.forEach(speakerPos ->
+                    BlockGlowRenderer.addBlock(speakerPos, SPEAKER_COLOR[0], SPEAKER_COLOR[1], SPEAKER_COLOR[2], SPEAKER_COLOR[3]));
             BlockGlowRenderer.setEnabled(true);
         }
     }
@@ -142,9 +139,7 @@ public class ClientNetworkManager {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBoolean(enabled);
         buf.writeInt(blocks.size());
-        for (BlockPos pos : blocks) {
-            buf.writeBlockPos(pos);
-        }
+        blocks.forEach(buf::writeBlockPos);
         buf.writeBlockPos(speakerPos);
         ClientPlayNetworking.send(CLIENT_BLOCKS_UPDATE_PACKET, buf);
     }

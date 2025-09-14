@@ -1,5 +1,9 @@
 package me.yuugao.meyuugaosradio.item;
 
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_CAPACITY;
+import static me.yuugao.meyuugaosradio.Constants.REMOTE_CONTROLLER_ENERGY_USAGE;
+
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.network.ServerNetworkManager;
 
@@ -8,9 +12,7 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -27,49 +29,38 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class RemoteControllerItem extends Item {
+    private final EnergyItemHandler energyItemHandler;
+
     @FunctionalInterface
     private interface BlockInteractionHandler {
         void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
     }
 
-    private static final long CAPACITY = 10_000L;
-    private static final long USAGE = 10L;
-
     public RemoteControllerItem(Settings settings) {
         super(settings);
+
+        this.energyItemHandler = new EnergyItemHandler(REMOTE_CONTROLLER_ENERGY_CAPACITY, REMOTE_CONTROLLER_ENERGY_USAGE);
     }
 
     @Override
     public ItemStack getDefaultStack() {
         ItemStack stack = super.getDefaultStack();
-        setupEnergyNbt(stack);
-        return stack;
-    }
+        energyItemHandler.setupEnergyComponents(stack);
 
-    private void setupEnergyNbt(ItemStack stack) {
-        NbtCompound nbt = stack.getOrCreateNbt();
-        nbt.putLong("Energy", 0);
-        nbt.putLong("Capacity", CAPACITY);
+        return stack;
     }
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
 
-        long energy = getEnergy(stack);
-        long capacity = getCapacity(stack);
-
-        MutableText energyText = Text.literal("").append(Text.translatable("tooltip.energy").formatted(Formatting.GRAY)).append(Text.literal(String.format(" %d/%d E", energy, capacity)).formatted(Formatting.GOLD));
-
-        MutableText usageText = Text.literal("").append(Text.translatable("tooltip.usage").formatted(Formatting.GRAY)).append(Text.literal(String.format(" %d E/", USAGE)).append(Text.translatable("tooltip.usage.usesuffix")).formatted(Formatting.GOLD));
-
-        tooltip.add(energyText);
-        tooltip.add(usageText);
+        energyItemHandler.appendTooltip(stack, tooltip);
     }
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         onRightClick(world, user);
+
         return TypedActionResult.success(user.getStackInHand(hand));
     }
 
@@ -85,14 +76,14 @@ public class RemoteControllerItem extends Item {
         if (!world.isClient() && !user.isSneaking() && user instanceof ServerPlayerEntity serverPlayerEntity) {
             ItemStack stack = user.getMainHandStack();
 
-            if (getEnergy(stack) < USAGE) {
+            if (energyItemHandler.getEnergy(stack) < energyItemHandler.getUsage(stack)) {
                 sendNotEnoughEnergyMessage(user);
                 return;
             }
 
-            removeEnergy(stack, USAGE);
-            BlockHitResult hit = raycastFromPlayer(user);
+            energyItemHandler.removeEnergy(stack, energyItemHandler.getUsage(stack));
 
+            BlockHitResult hit = raycastFromPlayer(user);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = hit.getBlockPos();
                 BlockState state = world.getBlockState(pos);
@@ -102,6 +93,7 @@ public class RemoteControllerItem extends Item {
                     return;
                 }
             }
+
             if (shouldResetRender) {
                 ServerNetworkManager.sendServerGlowClearPacket(serverPlayerEntity);
             }
@@ -110,7 +102,8 @@ public class RemoteControllerItem extends Item {
 
     private void sendNotEnoughEnergyMessage(PlayerEntity user) {
         if (user instanceof ServerPlayerEntity serverPlayerEntity) {
-            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity, Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
+            ServerNetworkManager.sendServerPlayerSendMessagePacket(serverPlayerEntity,
+                    Text.translatable("error.notenoughenergy").formatted(Formatting.BOLD, Formatting.RED), true);
         }
     }
 
@@ -120,7 +113,6 @@ public class RemoteControllerItem extends Item {
         Vec3d end = start.add(look.multiply(64));
 
         RaycastContext context = new RaycastContext(start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player);
-
         return player.getWorld().raycast(context);
     }
 
@@ -134,26 +126,7 @@ public class RemoteControllerItem extends Item {
         return 0f;
     }
 
-    public long getCapacity(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        return nbt != null && nbt.contains("Capacity") ? nbt.getLong("Capacity") : CAPACITY;
-    }
-
-    public long getEnergy(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        return nbt != null && nbt.contains("Energy") ? nbt.getLong("Energy") : 0;
-    }
-
-    public void setEnergy(ItemStack stack, long energy) {
-        NbtCompound nbt = stack.getOrCreateNbt();
-        nbt.putLong("Energy", Math.min(energy, getCapacity(stack)));
-    }
-
-    public void addEnergy(ItemStack stack, long amount) {
-        setEnergy(stack, getEnergy(stack) + amount);
-    }
-
-    public void removeEnergy(ItemStack stack, long amount) {
-        setEnergy(stack, Math.max(0, getEnergy(stack) - amount));
+    public EnergyItemHandler getEnergyItemHandler() {
+        return energyItemHandler;
     }
 }

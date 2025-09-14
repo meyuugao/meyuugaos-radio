@@ -15,8 +15,8 @@ public class NetworkConstants {
     public static final Identifier SERVER_OPEN_RADIO_GUI_PACKET = id("server_open_radio_gui_packet");
     public static final Identifier SERVER_OPEN_SPEAKER_GUI_PACKET = id("server_open_speaker_gui_packet");
     public static final Identifier SERVER_STREAM_START_PACKET = id("server_stream_start_packet");
-    public static final Identifier SERVER_VOLUME_UPDATE_PACKET = id("server_volume_update_packet");
     public static final Identifier SERVER_STREAM_STOP_PACKET = id("server_stream_stop_packet");
+    public static final Identifier SERVER_VOLUME_UPDATE_PACKET = id("server_volume_update_packet");
     public static final Identifier SERVER_GLOW_CLEAR_PACKET = id("server_glow_clear_packet");
 
     public static final Identifier CLIENT_BLOCKS_UPDATE_PACKET = id("client_blocks_update_packet");
@@ -26,6 +26,6 @@ public class NetworkConstants {
     public static final Identifier CLIENT_VOLUME_UPDATE_PACKET = id("client_volume_update_packet");
 
     private static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.of(MOD_ID, path);
     }
 }
