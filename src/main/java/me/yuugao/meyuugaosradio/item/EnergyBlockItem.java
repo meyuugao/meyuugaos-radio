@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public class EnergyBlockItem extends BlockItem {
     private final EnergyItemHandler energyItemHandler;
 
-    public EnergyBlockItem(Block block, Settings settings, long capacity, int usage) {
+    public EnergyBlockItem(Block block, Settings settings, long capacity, long usage) {
         super(block, settings);
 
         this.energyItemHandler = new EnergyItemHandler(capacity, usage);

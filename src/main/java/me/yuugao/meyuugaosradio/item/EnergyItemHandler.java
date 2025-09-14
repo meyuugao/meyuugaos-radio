@@ -14,9 +14,9 @@ import java.util.function.Consumer;
 
 public class EnergyItemHandler {
     private final long defaultCapacity;
-    private final int defaultUsage;
+    private final long defaultUsage;
 
-    public EnergyItemHandler(long defaultCapacity, int defaultUsage) {
+    public EnergyItemHandler(long defaultCapacity, long defaultUsage) {
         this.defaultCapacity = defaultCapacity;
         this.defaultUsage = defaultUsage;
     }
@@ -24,7 +24,7 @@ public class EnergyItemHandler {
     public void appendTooltip(ItemStack stack, Consumer<Text> textConsumer) {
         long energy = getEnergy(stack);
         long capacity = getCapacity(stack);
-        int usage = getUsage(stack);
+        long usage = getUsage(stack);
 
         textConsumer.accept(createEnergyText(energy, capacity));
         textConsumer.accept(createUsageText(usage));
@@ -34,7 +34,7 @@ public class EnergyItemHandler {
         NbtCompound energyData = new NbtCompound();
         energyData.putLong("Energy", 0L);
         energyData.putLong("Capacity", defaultCapacity);
-        energyData.putInt("Usage", defaultUsage);
+        energyData.putLong("Usage", defaultUsage);
         stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(energyData));
     }
 
@@ -50,17 +50,17 @@ public class EnergyItemHandler {
         return nbtComponent != null ? nbtComponent.copyNbt().getLong("Energy").orElse(0L) : 0L;
     }
 
-    public int getUsage(ItemStack stack) {
+    public long getUsage(ItemStack stack) {
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
 
-        return nbtComponent != null ? nbtComponent.copyNbt().getInt("Usage").orElse(defaultUsage) : defaultUsage;
+        return nbtComponent != null ? nbtComponent.copyNbt().getLong("Usage").orElse(defaultUsage) : defaultUsage;
     }
 
     private void setEnergy(ItemStack stack, long energy) {
         NbtCompound nbt = new NbtCompound();
         nbt.putLong("Energy", Math.min(energy, getCapacity(stack)));
         nbt.putLong("Capacity", getCapacity(stack));
-        nbt.putInt("Usage", getUsage(stack));
+        nbt.putLong("Usage", getUsage(stack));
         stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
     }
 
@@ -78,7 +78,7 @@ public class EnergyItemHandler {
                 .append(Text.literal(String.format(" %d/%d E", energy, capacity)).formatted(Formatting.GOLD));
     }
 
-    public MutableText createUsageText(int usage) {
+    public MutableText createUsageText(long usage) {
         return Text.literal(StringUtils.EMPTY)
                 .append(Text.translatable("tooltip.usage").formatted(Formatting.GRAY))
                 .append(Text.literal(String.format(" %d E/", usage)))
