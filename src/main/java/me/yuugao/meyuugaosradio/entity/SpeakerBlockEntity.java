@@ -1,7 +1,6 @@
 package me.yuugao.meyuugaosradio.entity;
 
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_MAX_RANGE;
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_VOLUME_MULTIPLIER;
+import static me.yuugao.meyuugaosradio.Constants.*;
 
 
 import me.yuugao.meyuugaosradio.Radio;
@@ -13,33 +12,42 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
-    private BlockPos radioPos = null;
+    private BlockPos radioPos;
 
     public SpeakerBlockEntity(BlockPos pos, BlockState state) {
-        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, 200_000L, 16L);
+        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE);
     }
 
     @Override
     public void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
         if (radioPos == null) {
             nbt.remove("RadioPos");
         } else {
-            nbt.put("RadioPos", NbtHelper.fromBlockPos(radioPos));
+            NbtCompound posCompound = new NbtCompound();
+            posCompound.putIntArray("pos", new int[]{radioPos.getX(), radioPos.getY(), radioPos.getZ()});
+            nbt.put("RadioPos", posCompound);
         }
+
+        super.writeNbt(nbt);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
+
         if (nbt.contains("RadioPos")) {
-            radioPos = NbtHelper.toBlockPos(nbt.getCompound("RadioPos"));
+            NbtCompound compound = nbt.getCompound("RadioPos");
+            int[] coords = compound.getIntArray("pos");
+            if (coords.length == 3) {
+                radioPos = new BlockPos(coords[0], coords[1], coords[2]);
+            } else {
+                radioPos = null;
+            }
         } else {
             radioPos = null;
         }
@@ -48,14 +56,18 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
     public void connectRadio(BlockPos pos) {
         if (this.world == null) return;
 
-        radioPos = pos.toImmutable();
-        BlockEntity blockEntity = this.world.getBlockEntity(radioPos);
+        BlockEntity blockEntity = this.world.getBlockEntity(pos.toImmutable());
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
             Direction facing = this.world.getBlockState(this.pos).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = this.world.getBlockState(this.pos).get(AbstractEnergyBlock.DIRECTION);
-            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
-            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection, this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                    direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                    direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+
+            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection,
+                    this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
         }
+
         markDirty();
     }
 
@@ -66,6 +78,7 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
             ServerHlsAudioManager.removeSoundSource(radioBlockEntity.getStreamUrl(), this.pos, world.getRegistryKey());
         }
+
         radioPos = null;
         markDirty();
     }

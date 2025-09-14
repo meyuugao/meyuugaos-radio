@@ -17,39 +17,7 @@ public class BlockGlowRenderer {
     private static VertexBuffer vertexBuffer;
     private static boolean enabled = false;
 
-    public static void onDisconnect() {
-        clearAll();
-        setEnabled(false);
-    }
-
-    public static void setEnabled(boolean state) {
-        enabled = state;
-    }
-
-    public static boolean isEnabled() {
-        return enabled;
-    }
-
-    public static Map<BlockPos, GlowInfo> getBlocks() {
-        return blocksToRender;
-    }
-
-    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
-        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
-        rebuildVertexBuffer();
-    }
-
-    public static void removeBlock(BlockPos pos) {
-        blocksToRender.remove(pos.toImmutable());
-        rebuildVertexBuffer();
-    }
-
-    public static void clearAll() {
-        blocksToRender.clear();
-        if (vertexBuffer != null) {
-            vertexBuffer.close();
-            vertexBuffer = null;
-        }
+    public record GlowInfo(float r, float g, float b, float a) {
     }
 
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
@@ -80,15 +48,14 @@ public class BlockGlowRenderer {
             return;
         }
 
-        vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
         buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        blocksToRender.forEach((pos, glow) -> {
-            renderBlockFaces(buffer, pos, glow.r(), glow.g(), glow.b(), glow.a());
-        });
+        blocksToRender.forEach((blockPos, glowInfo) ->
+                renderBlockFaces(buffer, blockPos, glowInfo.r(), glowInfo.g(), glowInfo.b(), glowInfo.a()));
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
@@ -96,9 +63,9 @@ public class BlockGlowRenderer {
     }
 
     private static void renderBlockFaces(BufferBuilder buffer, BlockPos pos, float r, float g, float b, float a) {
-        double x = pos.getX();
-        double y = pos.getY();
-        double z = pos.getZ();
+        float x = pos.getX();
+        float y = pos.getY();
+        float z = pos.getZ();
         float offset = 0.001f;
 
         buffer.vertex(x, y + 1 + offset, z).color(r, g, b, a).next();
@@ -130,5 +97,40 @@ public class BlockGlowRenderer {
         buffer.vertex(x + 1 + offset, y + 1, z).color(r, g, b, a).next();
         buffer.vertex(x + 1 + offset, y + 1, z + 1).color(r, g, b, a).next();
         buffer.vertex(x + 1 + offset, y, z + 1).color(r, g, b, a).next();
+    }
+
+    public static void onDisconnect() {
+        clearAll();
+        setEnabled(false);
+    }
+
+    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
+        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
+        rebuildVertexBuffer();
+    }
+
+    public static void removeBlock(BlockPos pos) {
+        blocksToRender.remove(pos.toImmutable());
+        rebuildVertexBuffer();
+    }
+
+    public static void clearAll() {
+        blocksToRender.clear();
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
+    }
+
+    public static Map<BlockPos, GlowInfo> getBlocksToRender() {
+        return blocksToRender;
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    public static void setEnabled(boolean state) {
+        enabled = state;
     }
 }

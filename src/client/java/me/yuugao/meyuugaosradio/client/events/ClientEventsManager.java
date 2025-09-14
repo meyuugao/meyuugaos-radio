@@ -16,8 +16,12 @@ public class ClientEventsManager {
     public static void initialize() {
         WorldRenderEvents.AFTER_TRANSLUCENT.register(worldRenderContext -> {
             MatrixStack matrixStack = worldRenderContext.matrixStack();
+            if (matrixStack == null) return;
+
             matrixStack.push();
-            matrixStack.translate(-worldRenderContext.camera().getPos().x, -worldRenderContext.camera().getPos().y, -worldRenderContext.camera().getPos().z);
+            matrixStack.translate(-worldRenderContext.camera().getPos().x,
+                    -worldRenderContext.camera().getPos().y,
+                    -worldRenderContext.camera().getPos().z);
 
             BlockGlowRenderer.render(matrixStack, worldRenderContext.projectionMatrix());
 

@@ -17,7 +17,7 @@
   "error.alreadyconnected": "This speaker is already connected to another radio!",
   "error.toofar": "This speaker is too far away from the radio!",
   "error.notenoughenergy": "Not enough energy to do this!",
-  "text.autoconfig.meyuugaosradio_client.title": "MeYuugao's Radio settings",
+  "text.autoconfig.meyuugaosradio_client.title": "MeYuugaos Radio settings",
   "text.autoconfig.meyuugaosradio_client.option.volume": "Volume",
   "gamerule.meyuugaosradioConnectRadius": "Maximum radio connection radius"
 }

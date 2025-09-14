@@ -26,8 +26,11 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ServerNetworkManager {
     public static void initialize() {
@@ -39,7 +42,6 @@ public class ServerNetworkManager {
                 blocks.add(buf.readBlockPos());
             }
             BlockPos speakerPos = buf.readBlockPos();
-
             server.execute(() -> serverSpeakerUse(player, enabled, blocks, player.getWorld(), speakerPos));
         });
 
@@ -76,9 +78,7 @@ public class ServerNetworkManager {
         buf.writeBlockPos(radioBlockEntity.getPos());
         List<BlockPos> speakers = radioBlockEntity.getSpeakers();
         buf.writeInt(speakers.size());
-        for (BlockPos speakerPos : speakers) {
-            buf.writeBlockPos(speakerPos);
-        }
+        speakers.forEach(buf::writeBlockPos);
 
         ServerPlayNetworking.send(player, SERVER_RADIO_PACKET, buf);
     }
@@ -105,28 +105,30 @@ public class ServerNetworkManager {
         if (!renderEnabled) return;
 
         SpeakerBlockEntity speakerBlockEntity = (SpeakerBlockEntity) world.getBlockEntity(speakerPos);
-        RadioBlockEntity activeRadioBlockEntity = null;
-        for (BlockPos blockPos : blocks) {
+        AtomicReference<RadioBlockEntity> activeRadioBlockEntity = new AtomicReference<>();
+
+        blocks.forEach(blockPos -> {
             if (world.getBlockEntity(blockPos) instanceof RadioBlockEntity) {
-                activeRadioBlockEntity = (RadioBlockEntity) world.getBlockEntity(blockPos);
+                activeRadioBlockEntity.set((RadioBlockEntity) world.getBlockEntity(blockPos));
             }
-        }
-        if (speakerBlockEntity == null || activeRadioBlockEntity == null) return;
+        });
+
+        if (speakerBlockEntity == null || activeRadioBlockEntity.get() == null) return;
 
         if (speakerBlockEntity.getRadioPos() == null) {
-            if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
+            if (!activeRadioBlockEntity.get().getPos().isWithinDistance(speakerPos, world.getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
                 sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
                 return;
             }
 
             sendServerAddBlockPacket(player, speakerBlockEntity.getPos(), 0f, 1f, 0f, 0.7f);
-            speakerBlockEntity.connectRadio(activeRadioBlockEntity.getPos());
-            activeRadioBlockEntity.connectSpeaker(speakerBlockEntity.getPos());
+            speakerBlockEntity.connectRadio(activeRadioBlockEntity.get().getPos());
+            activeRadioBlockEntity.get().connectSpeaker(speakerBlockEntity.getPos());
         } else {
-            if (speakerBlockEntity.getRadioPos().equals(activeRadioBlockEntity.getPos())) {
+            if (speakerBlockEntity.getRadioPos().equals(activeRadioBlockEntity.get().getPos())) {
                 sendServerRemoveBlockPacket(player, speakerBlockEntity.getPos());
                 speakerBlockEntity.disconnectRadio();
-                activeRadioBlockEntity.disconnectSpeaker(speakerBlockEntity.getPos());
+                activeRadioBlockEntity.get().disconnectSpeaker(speakerBlockEntity.getPos());
             } else {
                 sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
             }
@@ -160,6 +162,7 @@ public class ServerNetworkManager {
         if (blockEntity instanceof SpeakerBlockEntity speakerBlockEntity && speakerBlockEntity.getAmount() >= speakerBlockEntity.getUsage()) {
             boolean state = speakerBlockEntity.getCachedState().get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED);
             Block block = world.getBlockState(pos).getBlock();
+
             if (state) {
                 if (block instanceof SpeakerBlock speakerBlock) {
                     speakerBlock.onDisabled(world, pos, world.getBlockState(pos));
@@ -176,7 +179,8 @@ public class ServerNetworkManager {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             abstractEnergyBlockEntity.setVolume(volume);
-            String streamUrl = "";
+            String streamUrl = StringUtils.EMPTY;
+
             if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
                 streamUrl = radioBlockEntity.getStreamUrl();
             } else if (abstractEnergyBlockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {
@@ -186,6 +190,7 @@ public class ServerNetworkManager {
                     }
                 }
             }
+
             if (!streamUrl.isEmpty()) {
                 ServerHlsAudioManager.updateSoundSourceVolume(streamUrl, pos, volume * volumeMultiplier, world.getRegistryKey());
             }
@@ -230,16 +235,16 @@ public class ServerNetworkManager {
         ServerPlayNetworking.send(player, SERVER_OPEN_SPEAKER_GUI_PACKET, buf);
     }
 
-    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(streamUrl);
-        ServerPlayNetworking.send(player, SERVER_STREAM_STOP_PACKET, buf);
-    }
-
     public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(streamUrl);
         ServerPlayNetworking.send(player, SERVER_STREAM_START_PACKET, buf);
+    }
+
+    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(streamUrl);
+        ServerPlayNetworking.send(player, SERVER_STREAM_STOP_PACKET, buf);
     }
 
     public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
