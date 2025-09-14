@@ -17,7 +17,7 @@
   "error.alreadyconnected": "Данный динамик уже подключён к другому радио!",
   "error.toofar": "Данный динамик находится слишком далеко от радио!",
   "error.notenoughenergy": "Не хватает энергии, чтобы сделать это!",
-  "text.autoconfig.meyuugaosradio_client.title": "Настройки MeYuugao's Radio",
+  "text.autoconfig.meyuugaosradio_client.title": "Настройки MeYuugaos Radio",
   "text.autoconfig.meyuugaosradio_client.option.volume": "Громкость",
   "gamerule.meyuugaosradioConnectRadius": "Максимальный радиус подключения радио"
 }
