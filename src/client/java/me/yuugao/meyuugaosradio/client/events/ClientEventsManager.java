@@ -19,7 +19,6 @@ public class ClientEventsManager {
             if (matrixStack == null) return;
 
             matrixStack.push();
-
             matrixStack.translate(-worldRenderContext.camera().getPos().x,
                     -worldRenderContext.camera().getPos().y,
                     -worldRenderContext.camera().getPos().z);
