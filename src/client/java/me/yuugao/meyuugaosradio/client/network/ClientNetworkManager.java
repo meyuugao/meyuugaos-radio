@@ -25,11 +25,11 @@ public class ClientNetworkManager {
                 context.client().execute(() -> clientRadioUse(payload.pos(), payload.speakers())));
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerRequestBlocksPayload.ID, (payload, context) ->
-                context.client().execute(() -> sendClientBlocksUpdatePacket(BlockGlowRenderer.isEnabled(), BlockGlowRenderer.getBlocks().keySet(), payload.pos())));
+                context.client().execute(() -> sendClientBlocksUpdatePacket(BlockGlowRenderer.isEnabled(), BlockGlowRenderer.getBlocksToRender().keySet(), payload.pos())));
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerRadioGlobalUnbindPayload.ID, (payload, context) ->
                 context.client().execute(() -> {
-                    if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocks().containsKey(payload.pos())) {
+                    if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocksToRender().containsKey(payload.pos())) {
                         BlockGlowRenderer.clearAll();
                         BlockGlowRenderer.setEnabled(false);
                     }
@@ -37,7 +37,7 @@ public class ClientNetworkManager {
 
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerSpeakerGlobalUnbindPayload.ID, (payload, context) ->
                 context.client().execute(() -> {
-                    if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocks().containsKey(payload.pos())) {
+                    if (BlockGlowRenderer.isEnabled() && BlockGlowRenderer.getBlocksToRender().containsKey(payload.pos())) {
                         BlockGlowRenderer.removeBlock(payload.pos());
                     }
                 }));
@@ -77,7 +77,7 @@ public class ClientNetworkManager {
 
     private static void clientRadioUse(BlockPos radioPos, List<BlockPos> speakers) {
         if (BlockGlowRenderer.isEnabled()) {
-            if (BlockGlowRenderer.getBlocks().containsKey(radioPos)) {
+            if (BlockGlowRenderer.getBlocksToRender().containsKey(radioPos)) {
                 BlockGlowRenderer.clearAll();
                 BlockGlowRenderer.setEnabled(false);
             } else {

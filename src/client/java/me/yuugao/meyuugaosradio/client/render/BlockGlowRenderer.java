@@ -34,35 +34,6 @@ public class BlockGlowRenderer {
     public record GlowInfo(float r, float g, float b, float a) {
     }
 
-    public static void onDisconnect() {
-        clearAll();
-        setEnabled(false);
-    }
-
-    public static void setEnabled(boolean state) {
-        enabled = state;
-    }
-
-    public static boolean isEnabled() {
-        return enabled;
-    }
-
-    public static Map<BlockPos, GlowInfo> getBlocks() {
-        return blocksToRender;
-    }
-
-    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
-        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
-    }
-
-    public static void removeBlock(BlockPos pos) {
-        blocksToRender.remove(pos.toImmutable());
-    }
-
-    public static void clearAll() {
-        blocksToRender.clear();
-    }
-
     public static void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider) {
         if (!enabled || blocksToRender.isEmpty()) return;
 
@@ -105,5 +76,34 @@ public class BlockGlowRenderer {
             buffer.vertex(matrix4f, x + 1 + offset, y + 1, z + 1).color(glow.r(), glow.g(), glow.b(), glow.a());
             buffer.vertex(matrix4f, x + 1 + offset, y, z + 1).color(glow.r(), glow.g(), glow.b(), glow.a());
         });
+    }
+
+    public static void onDisconnect() {
+        clearAll();
+        setEnabled(false);
+    }
+
+    public static void addBlock(BlockPos pos, float r, float g, float b, float a) {
+        blocksToRender.put(pos.toImmutable(), new GlowInfo(r, g, b, a));
+    }
+
+    public static void removeBlock(BlockPos pos) {
+        blocksToRender.remove(pos.toImmutable());
+    }
+
+    public static void clearAll() {
+        blocksToRender.clear();
+    }
+
+    public static Map<BlockPos, GlowInfo> getBlocksToRender() {
+        return blocksToRender;
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    public static void setEnabled(boolean state) {
+        enabled = state;
     }
 }
