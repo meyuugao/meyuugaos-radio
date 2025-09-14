@@ -2,7 +2,6 @@ package me.yuugao.meyuugaosradio.block;
 
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -16,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.BlockRotation;
@@ -28,12 +26,13 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractEnergyBlock extends BlockWithEntity {
-    public static final DirectionProperty FACING = HorizontalFacingBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalFacingBlock.FACING;
     public static final EnumProperty<DirectionEnum> DIRECTION = EnumProperty.of("direction", DirectionEnum.class);
     public static final EnumProperty<EnergyStateEnum> ENERGY_STATE = EnumProperty.of("energy_state", EnergyStateEnum.class);
 
-    protected AbstractEnergyBlock() {
-        super(Settings.create().nonOpaque().strength(2.0f));
+    protected AbstractEnergyBlock(Settings settings) {
+        super(settings.nonOpaque().strength(2.0f));
+
         this.setDefaultState(stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(DIRECTION, DirectionEnum.SIDE)
@@ -54,8 +53,7 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         Direction side = ctx.getSide();
         DirectionEnum direction = side == Direction.UP ? DirectionEnum.UP :
-                side == Direction.DOWN ? DirectionEnum.DOWN :
-                        DirectionEnum.SIDE;
+                side == Direction.DOWN ? DirectionEnum.DOWN : DirectionEnum.SIDE;
 
         return getDefaultState()
                 .with(FACING, ctx.getHorizontalPlayerFacing().getOpposite())
@@ -115,7 +113,9 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
     protected Vec3d getVecDirection(World world, BlockPos pos) {
         Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
         DirectionEnum direction = world.getBlockState(pos).get(AbstractEnergyBlock.DIRECTION);
-        return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+
+        return new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 :
+                direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
     }
 
     public void onEnabled(World world, BlockPos pos, BlockState state) {

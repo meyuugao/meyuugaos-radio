@@ -1,7 +1,6 @@
 package me.yuugao.meyuugaosradio.entity;
 
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_MAX_RANGE;
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_VOLUME_MULTIPLIER;
+import static me.yuugao.meyuugaosradio.Constants.*;
 
 
 import me.yuugao.meyuugaosradio.Radio;
@@ -19,15 +18,16 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
-    private BlockPos radioPos = null;
+    private BlockPos radioPos;
 
     public SpeakerBlockEntity(BlockPos pos, BlockState state) {
-        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, 200_000L, 16L);
+        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE);
     }
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
+
         if (radioPos == null) {
             nbt.remove("RadioPos");
         } else {
@@ -40,6 +40,7 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
     @Override
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
+
         if (nbt.contains("RadioPos")) {
             NbtCompound compound = nbt.getCompound("RadioPos");
             int[] coords = compound.getIntArray("pos");
@@ -61,8 +62,11 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
         if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty() && this.isEnabled()) {
             Direction facing = this.world.getBlockState(this.pos).get(HorizontalFacingBlock.FACING);
             DirectionEnum direction = this.world.getBlockState(this.pos).get(AbstractEnergyBlock.DIRECTION);
-            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0, direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1, direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
-            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection, this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
+            Vec3d vecDirection = new Vec3d(direction == DirectionEnum.SIDE ? facing.getOffsetX() : 0,
+                    direction == DirectionEnum.SIDE ? 0 : direction == DirectionEnum.UP ? 1 : -1,
+                    direction == DirectionEnum.SIDE ? facing.getOffsetZ() : 0).normalize();
+            ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), this.pos, vecDirection,
+                    this.volume * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
         }
         markDirty();
     }
