@@ -48,7 +48,7 @@ public class EnergyItemHandler {
 
     public long getUsage(ItemStack stack) {
         NbtCompound nbt = stack.getNbt();
-        return nbt != null && nbt.contains("Usage") ? nbt.getLong("Usage") : 0L;
+        return nbt != null && nbt.contains("Usage") ? nbt.getLong("Usage") : defaultUsage;
     }
 
     private void setEnergy(ItemStack stack, long energy) {
