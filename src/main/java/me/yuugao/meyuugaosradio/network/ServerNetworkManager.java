@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ServerNetworkManager {
     public static void initialize() {
@@ -116,12 +117,12 @@ public class ServerNetworkManager {
         ServerPlayNetworking.send(player, new NetworkConstants.ServerOpenSpeakerGuiPayload(pos, volume));
     }
 
-    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
-        ServerPlayNetworking.send(player, new NetworkConstants.ServerStreamStopPayload(streamUrl));
-    }
-
     public static void sendServerStreamStartPacket(ServerPlayerEntity player, String streamUrl) {
         ServerPlayNetworking.send(player, new NetworkConstants.ServerStreamStartPayload(streamUrl));
+    }
+
+    public static void sendServerStreamStopPacket(ServerPlayerEntity player, String streamUrl) {
+        ServerPlayNetworking.send(player, new NetworkConstants.ServerStreamStopPayload(streamUrl));
     }
 
     public static void sendServerVolumeUpdatePacket(ServerPlayerEntity player, String streamUrl, float volume) {
@@ -136,32 +137,32 @@ public class ServerNetworkManager {
         if (!renderEnabled) return;
 
         SpeakerBlockEntity speakerBlockEntity = (SpeakerBlockEntity) world.getBlockEntity(speakerPos);
-        RadioBlockEntity activeRadioBlockEntity = null;
-        for (BlockPos blockPos : blocks) {
-            if (world.getBlockEntity(blockPos) instanceof RadioBlockEntity) {
-                activeRadioBlockEntity = (RadioBlockEntity) world.getBlockEntity(blockPos);
-            }
-        }
-        if (speakerBlockEntity == null || activeRadioBlockEntity == null || world.getServer() == null) return;
+        AtomicReference<RadioBlockEntity> activeRadioBlockEntity = new AtomicReference<>();
 
-        if (speakerBlockEntity.getRadioPos() == null) {
-            if (!activeRadioBlockEntity.getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar")
-                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+        blocks.forEach(blockPos -> {
+            if (world.getBlockEntity(blockPos) instanceof RadioBlockEntity) {
+                activeRadioBlockEntity.set((RadioBlockEntity) world.getBlockEntity(blockPos));
+            }
+        });
+
+        if (speakerBlockEntity == null || activeRadioBlockEntity.get() == null) return;
+
+        if (speakerBlockEntity.getRadioPos() == null && world.getServer() != null) {
+            if (!activeRadioBlockEntity.get().getPos().isWithinDistance(speakerPos, world.getServer().getGameRules().getInt(Radio.RADIO_CONNECT_RADIUS) + 1)) {
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.toofar").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
                 return;
             }
 
             sendServerAddBlockPacket(player, speakerBlockEntity.getPos(), 0f, 1f, 0f, 0.7f);
-            speakerBlockEntity.connectRadio(activeRadioBlockEntity.getPos());
-            activeRadioBlockEntity.connectSpeaker(speakerBlockEntity.getPos());
+            speakerBlockEntity.connectRadio(activeRadioBlockEntity.get().getPos());
+            activeRadioBlockEntity.get().connectSpeaker(speakerBlockEntity.getPos());
         } else {
-            if (speakerBlockEntity.getRadioPos().equals(activeRadioBlockEntity.getPos())) {
+            if (speakerBlockEntity.getRadioPos().equals(activeRadioBlockEntity.get().getPos())) {
                 sendServerRemoveBlockPacket(player, speakerBlockEntity.getPos());
                 speakerBlockEntity.disconnectRadio();
-                activeRadioBlockEntity.disconnectSpeaker(speakerBlockEntity.getPos());
+                activeRadioBlockEntity.get().disconnectSpeaker(speakerBlockEntity.getPos());
             } else {
-                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected")
-                        .formatted(Formatting.BOLD).formatted(Formatting.RED), true);
+                sendServerPlayerSendMessagePacket(player, Text.translatable("error.alreadyconnected").formatted(Formatting.BOLD).formatted(Formatting.RED), true);
             }
         }
     }
@@ -193,6 +194,7 @@ public class ServerNetworkManager {
         if (blockEntity instanceof SpeakerBlockEntity speakerBlockEntity && speakerBlockEntity.getAmount() >= speakerBlockEntity.getUsage()) {
             boolean state = speakerBlockEntity.getCachedState().get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED);
             Block block = world.getBlockState(pos).getBlock();
+
             if (state) {
                 if (block instanceof SpeakerBlock speakerBlock) {
                     speakerBlock.onDisabled(world, pos, world.getBlockState(pos));
@@ -210,6 +212,7 @@ public class ServerNetworkManager {
         if (blockEntity instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             abstractEnergyBlockEntity.setVolume(volume);
             String streamUrl = StringUtils.EMPTY;
+
             if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
                 streamUrl = radioBlockEntity.getStreamUrl();
             } else if (abstractEnergyBlockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {
@@ -219,6 +222,7 @@ public class ServerNetworkManager {
                     }
                 }
             }
+
             if (!streamUrl.isEmpty()) {
                 ServerHlsAudioManager.updateSoundSourceVolume(streamUrl, pos, volume * volumeMultiplier, world.getRegistryKey());
             }

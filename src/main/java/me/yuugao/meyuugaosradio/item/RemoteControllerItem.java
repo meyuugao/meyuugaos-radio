@@ -76,20 +76,18 @@ public class RemoteControllerItem extends Item {
 
             if (energyItemHandler.getEnergy(stack) < energyItemHandler.getUsage(stack)) {
                 sendNotEnoughEnergyMessage(user);
-
                 return;
             }
 
             energyItemHandler.removeEnergy(stack, energyItemHandler.getUsage(stack));
-            BlockHitResult hit = raycastFromPlayer(user);
 
+            BlockHitResult hit = raycastFromPlayer(user);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = hit.getBlockPos();
                 BlockState state = world.getBlockState(pos);
 
                 if (state.getBlock() instanceof AbstractEnergyBlock abstractEnergyBlock) {
                     interactionHandler.handle(abstractEnergyBlock, world, pos, serverPlayerEntity);
-
                     return;
                 }
             }
@@ -113,7 +111,6 @@ public class RemoteControllerItem extends Item {
         Vec3d end = start.add(look.multiply(64));
 
         RaycastContext context = new RaycastContext(start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player);
-
         return player.getWorld().raycast(context);
     }
 

@@ -75,6 +75,7 @@ public abstract class BaseGuiScreen extends Screen {
                 return true;
             }
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -83,6 +84,7 @@ public abstract class BaseGuiScreen extends Screen {
         if (button == 0) {
             volumeSliderDragging = false;
         }
+
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -113,7 +115,6 @@ public abstract class BaseGuiScreen extends Screen {
 
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 volumeTextFieldFocused = false;
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
                 if (volumeCursorPosition > 0) {
@@ -121,37 +122,32 @@ public abstract class BaseGuiScreen extends Screen {
                     volumeCursorPosition--;
                     updateVolumeFromText(newText);
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 if (volumeCursorPosition < volumeText.length()) {
                     String newText = volumeText.substring(0, volumeCursorPosition) + volumeText.substring(volumeCursorPosition + 1);
                     updateVolumeFromText(newText);
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
                 if (volumeCursorPosition > 0) {
                     volumeCursorPosition--;
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
                 if (volumeCursorPosition < volumeText.length()) {
                     volumeCursorPosition++;
                 }
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_HOME) {
                 volumeCursorPosition = 0;
-
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_END) {
                 volumeCursorPosition = volumeText.length();
-
                 return true;
             }
         }
+
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -254,9 +250,11 @@ public abstract class BaseGuiScreen extends Screen {
             int value = Integer.parseInt(text);
             volume = Math.max(0, Math.min(100, value)) / 100.0f;
         }
+
         if (volume == 0.0f) {
             volumeCursorPosition = 1;
         }
+
         sendVolumeUpdatePacket(volume);
     }
 

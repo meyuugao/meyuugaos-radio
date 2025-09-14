@@ -30,19 +30,19 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-
         nbt.putLong("Energy", energy);
         nbt.putLong("Capacity", capacity);
         nbt.putLong("Usage", usage);
         nbt.putFloat("Volume", volume);
+
+        super.writeNbt(nbt, registryLookup);
     }
 
     @Override
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
 
-        this.energy = nbt.getLong("Energy");
+        this.energy = nbt.contains("Energy") ? nbt.getLong("Energy") : 0L;
         this.volume = nbt.contains("Volume") ? nbt.getFloat("Volume") : volume;
     }
 
@@ -54,7 +54,7 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
     public long insert(long maxAmount, TransactionContext transaction) {
         long inserted = Math.min(maxAmount, capacity - energy);
 
-        transaction.addCloseCallback((t, result) -> {
+        transaction.addCloseCallback((context, result) -> {
             if (result.wasCommitted()) {
                 energy += inserted;
                 markDirty();
@@ -96,7 +96,6 @@ public abstract class AbstractEnergyBlockEntity extends BlockEntity implements E
         if (energy >= usage) {
             energy -= usage;
             markDirty();
-
             return true;
         }
 

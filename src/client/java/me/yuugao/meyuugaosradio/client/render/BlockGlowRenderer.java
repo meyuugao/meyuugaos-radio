@@ -57,7 +57,8 @@ public class BlockGlowRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
-        blocksToRender.forEach((pos, glow) -> renderBlockFaces(buffer, pos, glow.r(), glow.g(), glow.b(), glow.a()));
+        blocksToRender.forEach((blockPos, glowInfo) ->
+                renderBlockFaces(buffer, blockPos, glowInfo.r(), glowInfo.g(), glowInfo.b(), glowInfo.a()));
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
