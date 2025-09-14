@@ -15,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
 
 import org.lwjgl.glfw.GLFW;
 
-public class RadioGuiScreen extends MainGuiScreen {
+public class RadioGuiScreen extends BaseGuiScreen {
     private String streamUrl;
     private boolean textFieldFocused = false;
     private int cursorPosition = 0;

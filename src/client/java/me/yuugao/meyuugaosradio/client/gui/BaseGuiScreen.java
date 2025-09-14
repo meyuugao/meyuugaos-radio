@@ -17,7 +17,7 @@ import net.minecraft.util.math.BlockPos;
 
 import org.lwjgl.glfw.GLFW;
 
-public abstract class MainGuiScreen extends Screen {
+public abstract class BaseGuiScreen extends Screen {
     protected final BlockPos pos;
     protected long currentTime;
     protected int x;
@@ -30,7 +30,7 @@ public abstract class MainGuiScreen extends Screen {
     protected boolean volumeSliderDragging = false;
     protected int dragOffsetY;
 
-    protected MainGuiScreen(BlockPos pos, float volume) {
+    protected BaseGuiScreen(BlockPos pos, float volume) {
         super(Text.empty());
 
         this.pos = pos;

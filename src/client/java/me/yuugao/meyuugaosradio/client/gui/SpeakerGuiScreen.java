@@ -12,7 +12,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-public class SpeakerGuiScreen extends MainGuiScreen {
+public class SpeakerGuiScreen extends BaseGuiScreen {
     public SpeakerGuiScreen(BlockPos pos, float volume) {
         super(pos, volume);
     }
