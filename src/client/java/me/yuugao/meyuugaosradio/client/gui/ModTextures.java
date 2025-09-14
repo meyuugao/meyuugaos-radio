@@ -3,17 +3,17 @@ package me.yuugao.meyuugaosradio.client.gui;
 import net.minecraft.util.Identifier;
 
 public class ModTextures {
-    public static final Identifier RADIO_GUI_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/radio_gui.png");
-    public static final Identifier RADIO_BUTTON_DISABLED_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/radio_button_disabled.png");
-    public static final Identifier RADIO_BUTTON_ENABLED_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/radio_button_enabled.png");
-    public static final Identifier RADIO_MAIN_TEXT_FIELD_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/radio_main_text_field.png");
-    public static final Identifier VOLUME_TEXT_FIELD_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/volume_text_field.png");
-    public static final Identifier TEXT_FIELD_CURSOR_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/text_field_cursor.png");
-    public static final Identifier VOLUME_SLIDER_TRACK_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/volume_slider_track.png");
-    public static final Identifier VOLUME_SLIDER_THUMB_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/volume_slider_thumb.png");
-    public static final Identifier SPEAKER_GUI_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/speaker_gui.png");
-    public static final Identifier SPEAKER_BUTTON_DISABLED_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/speaker_button_disabled.png");
-    public static final Identifier SPEAKER_BUTTON_ENABLED_TEXTURE = new Identifier("meyuugaosradio", "textures/gui/speaker_button_enabled.png");
+    public static final Identifier RADIO_GUI_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/radio_gui.png");
+    public static final Identifier DISABLED_RADIO_BUTTON_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/disabled_radio_button.png");
+    public static final Identifier ENABLED_RADIO_BUTTON_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/enabled_radio_button.png");
+    public static final Identifier RADIO_MAIN_TEXT_FIELD_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/radio_main_text_field.png");
+    public static final Identifier VOLUME_TEXT_FIELD_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/volume_text_field.png");
+    public static final Identifier TEXT_FIELD_CURSOR_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/text_field_cursor.png");
+    public static final Identifier VOLUME_SLIDER_TRACK_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/volume_slider_track.png");
+    public static final Identifier VOLUME_SLIDER_THUMB_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/volume_slider_thumb.png");
+    public static final Identifier SPEAKER_GUI_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/speaker_gui.png");
+    public static final Identifier DISABLED_SPEAKER_BUTTON_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/disabled_speaker_button.png");
+    public static final Identifier ENABLED_SPEAKER_BUTTON_TEXTURE = Identifier.of("meyuugaosradio", "textures/gui/enabled_speaker_button.png");
 
     public static final int RADIO_GUI_WIDTH = 256;
     public static final int RADIO_GUI_HEIGHT = 256;
