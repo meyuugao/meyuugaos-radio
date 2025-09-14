@@ -1,5 +1,7 @@
 package me.yuugao.meyuugaosradio.entity;
 
+import static me.yuugao.meyuugaosradio.Constants.*;
+
 import me.yuugao.meyuugaosradio.Radio;
 
 import net.minecraft.block.BlockState;
@@ -19,7 +21,7 @@ public class RadioBlockEntity extends AbstractEnergyBlockEntity {
     private String streamUrl;
 
     public RadioBlockEntity(BlockPos pos, BlockState state) {
-        super(Radio.RADIO_BLOCK_ENTITY, pos, state, 100_000L, 8L);
+        super(Radio.RADIO_BLOCK_ENTITY, pos, state, RADIO_ENERGY_CAPACITY, RADIO_ENERGY_USAGE);
 
         this.speakers = new ArrayList<>();
         this.streamUrl = StringUtils.EMPTY;

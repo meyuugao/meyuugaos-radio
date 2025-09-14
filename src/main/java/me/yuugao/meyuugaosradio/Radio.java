@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
@@ -55,10 +56,9 @@ public class Radio implements ModInitializer {
     public static BlockEntityType<RadioBlockEntity> RADIO_BLOCK_ENTITY;
     public static BlockEntityType<SpeakerBlockEntity> SPEAKER_BLOCK_ENTITY;
 
-    public static SoundEvent BLOCK_DISMANTLE;
+    public static GameRules.Key<GameRules.IntRule> RADIO_CONNECT_RADIUS;
 
-    public static final GameRules.Key<GameRules.IntRule> RADIO_CONNECT_RADIUS =
-            GameRuleRegistry.register("meyuugaosradioConnectRadius", GameRules.Category.MISC, GameRuleFactory.createIntRule(50));
+    public static SoundEvent BLOCK_DISMANTLE;
 
     @Override
     public void onInitialize() {
@@ -67,6 +67,7 @@ public class Radio implements ModInitializer {
         registerBlockEntities();
         registerItemGroups();
         registerEnergyStorages();
+        registerGameRules();
         registerSounds();
         ServerNetworkManager.initialize();
         ServerEventsManager.initialize();
@@ -99,25 +100,27 @@ public class Radio implements ModInitializer {
         MEMBRANE_ITEM = registerItem(MEMBRANE_ID, Item::new, new Item.Settings().maxCount(DEFAULT_STACK_SIZE));
     }
 
+    private void registerBlockEntities() {
+        RADIO_BLOCK_ENTITY = registerBlockEntity(RADIO_BLOCK_ENTITY_ID, abstractBlock ->
+                FabricBlockEntityTypeBuilder.create(RadioBlockEntity::new, RADIO_BLOCK).build(), RADIO_BLOCK);
+
+        SPEAKER_BLOCK_ENTITY = registerBlockEntity(SPEAKER_BLOCK_ENTITY_ID, abstractBlock ->
+                FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, SPEAKER_BLOCK).build(), SPEAKER_BLOCK);
+    }
+
     private Block registerBlock(String path, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
-        final Identifier identifier = Identifier.of("meyuugaosradio", path);
-        final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
-        return Blocks.register(registryKey, factory, settings);
+        RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, path));
+        return Registry.register(Registries.BLOCK, registryKey, factory.apply(settings));
     }
 
     private Item registerItem(String path, Function<Item.Settings, Item> factory, Item.Settings settings) {
-        RegistryKey<Item> registryKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of("meyuugaosradio", path));
-        Item item = factory.apply(settings.registryKey(registryKey));
-        Registry.register(Registries.ITEM, registryKey, item);
-        return item;
+        RegistryKey<Item> registryKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, path));
+        return Registry.register(Registries.ITEM, registryKey, factory.apply(settings));
     }
 
-    private void registerBlockEntities() {
-        RADIO_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, id(RADIO_BLOCK_ENTITY_ID),
-                FabricBlockEntityTypeBuilder.create(RadioBlockEntity::new, RADIO_BLOCK).build());
-
-        SPEAKER_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, id(SPEAKER_BLOCK_ENTITY_ID),
-                FabricBlockEntityTypeBuilder.create(SpeakerBlockEntity::new, SPEAKER_BLOCK).build());
+    private <T extends BlockEntity> BlockEntityType<T> registerBlockEntity(String path, Function<AbstractBlock, BlockEntityType<T>> factory, AbstractBlock block) {
+        RegistryKey<BlockEntityType<?>> registryKey = RegistryKey.of(RegistryKeys.BLOCK_ENTITY_TYPE, Identifier.of(MOD_ID, path));
+        return Registry.register(Registries.BLOCK_ENTITY_TYPE, registryKey, factory.apply(block));
     }
 
     private void registerItemGroups() {
@@ -176,6 +179,10 @@ public class Radio implements ModInitializer {
                 }
             };
         }, REMOTE_CONTROLLER_ITEM);
+    }
+
+    private void registerGameRules() {
+        RADIO_CONNECT_RADIUS = GameRuleRegistry.register("meyuugaosradioConnectRadius", GameRules.Category.MISC, GameRuleFactory.createIntRule(50));
     }
 
     private void registerSounds() {

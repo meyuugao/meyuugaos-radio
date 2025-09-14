@@ -1,7 +1,6 @@
 package me.yuugao.meyuugaosradio.entity;
 
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_MAX_RANGE;
-import static me.yuugao.meyuugaosradio.Constants.SPEAKER_VOLUME_MULTIPLIER;
+import static me.yuugao.meyuugaosradio.Constants.*;
 
 
 import me.yuugao.meyuugaosradio.Radio;
@@ -22,7 +21,7 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
     private BlockPos radioPos;
 
     public SpeakerBlockEntity(BlockPos pos, BlockState state) {
-        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, 200_000L, 16L);
+        super(Radio.SPEAKER_BLOCK_ENTITY, pos, state, SPEAKER_ENERGY_CAPACITY, SPEAKER_ENERGY_USAGE);
     }
 
     @Override

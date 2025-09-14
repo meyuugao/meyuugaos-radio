@@ -30,7 +30,7 @@ public class RemoteControllerItem extends Item {
         void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
     }
 
-    public RemoteControllerItem(Settings settings, long capacity, int usage) {
+    public RemoteControllerItem(Settings settings, long capacity, long usage) {
         super(settings);
 
         this.energyItemHandler = new EnergyItemHandler(capacity, usage);
