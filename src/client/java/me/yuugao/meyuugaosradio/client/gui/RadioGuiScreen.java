@@ -7,7 +7,6 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -233,7 +232,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
     }
 
     private void updateTextOffset() {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         String textBeforeCursor = streamUrl.substring(0, cursorPosition);
         int textWidth = textRenderer.getWidth(textBeforeCursor);
         if (textWidth - textOffset > TEXT_FIELD_BORDER_WIDTH - 4) {
