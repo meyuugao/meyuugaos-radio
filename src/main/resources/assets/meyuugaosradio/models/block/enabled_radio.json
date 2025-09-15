@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "meyuugaosradio:block/radio/radio_side",
+    "down": "meyuugaosradio:block/radio/radio_bottom",
+    "up": "meyuugaosradio:block/radio/radio_top",
+    "north": "meyuugaosradio:block/radio/enabled_radio_front",
+    "east": "meyuugaosradio:block/radio/radio_side",
+    "south": "meyuugaosradio:block/radio/radio_side",
+    "west": "meyuugaosradio:block/radio/radio_side"
+  }
+}
