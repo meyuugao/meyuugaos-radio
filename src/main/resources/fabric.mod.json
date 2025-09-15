@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "meyuugaosradio",
+  "version": "${version}",
+  "name": "MeYuugaos radio",
+  "description": "A project inspired by Dragon's Radio mod and made for the new versions of Minecraft.\nThis mod can play HLS AAC audio streams (.m3u8).",
+  "authors": [
+    "MeYuugao"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/project/meyuugaos-radio",
+    "email": "https://meyuugao@gmail.com",
+    "issues": "https://github.com/meyuugao/meuuugaos-radio-mod/issues",
+    "sources": "https://github.com/meyuugao/meyuugaos-radio-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/meyuugaosradio/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.yuugao.meyuugaosradio.Radio"
+    ],
+    "client": [
+      "me.yuugao.meyuugaosradio.client.RadioClient"
+    ],
+    "modmenu": [
+      "me.yuugao.meyuugaosradio.client.integration.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "meyuugaosradio.mixins.json",
+    {
+      "config": "meyuugaosradio.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "techreborn": ">=5.3.3",
+    "reborncore": ">=5.3.3",
+    "cloth-config": ">=8.0.75"
+  }
+}
