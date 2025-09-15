@@ -8,10 +8,10 @@
     "MeYuugao"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/project/meyuugaos-radio",
+    "homepage": "https://modrinth.com/project/meyuugaos-radio-mod",
     "email": "https://meyuugao@gmail.com",
-    "issues": "https://github.com/meyuugao/MeYuugaos-radio-mod/issues",
-    "sources": "https://github.com/meyuugao/MeYuugaos-radio-mod"
+    "issues": "https://github.com/meyuugao/meuuugaos-radio-mod/issues",
+    "sources": "https://github.com/meyuugao/meuuugaos-radio-mod"
   },
   "license": "MIT",
   "icon": "assets/meyuugaosradio/icon.png",
