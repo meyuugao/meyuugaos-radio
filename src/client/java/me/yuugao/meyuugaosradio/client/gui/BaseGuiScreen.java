@@ -263,7 +263,7 @@ public abstract class BaseGuiScreen extends Screen {
         return false;
     }
 
-    public static void enableScissor(int x1, int y1, int x2, int y2) {
+    protected void enableScissor(int x1, int y1, int x2, int y2) {
         Window window = MinecraftClient.getInstance().getWindow();
         int i = window.getFramebufferHeight();
         double d = window.getScaleFactor();
@@ -272,6 +272,10 @@ public abstract class BaseGuiScreen extends Screen {
         double g = (double) (x2 - x1) * d;
         double h = (double) (y2 - y1) * d;
         RenderSystem.enableScissor((int) e, (int) f, Math.max(0, (int) g), Math.max(0, (int) h));
+    }
+
+    protected void disableScissor() {
+        RenderSystem.disableScissor();
     }
 
     protected abstract Identifier getGuiTexture();
