@@ -267,11 +267,11 @@ public abstract class BaseGuiScreen extends Screen {
         Window window = MinecraftClient.getInstance().getWindow();
         int i = window.getFramebufferHeight();
         double d = window.getScaleFactor();
-        double e = (double)x1 * d;
-        double f = (double)i - (double)y2 * d;
-        double g = (double)(x2 - x1) * d;
-        double h = (double)(y2 - y1) * d;
-        RenderSystem.enableScissor((int)e, (int)f, Math.max(0, (int)g), Math.max(0, (int)h));
+        double e = (double) x1 * d;
+        double f = (double) i - (double) y2 * d;
+        double g = (double) (x2 - x1) * d;
+        double h = (double) (y2 - y1) * d;
+        RenderSystem.enableScissor((int) e, (int) f, Math.max(0, (int) g), Math.max(0, (int) h));
     }
 
     protected abstract Identifier getGuiTexture();
