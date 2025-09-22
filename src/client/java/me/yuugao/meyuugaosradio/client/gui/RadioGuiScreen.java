@@ -197,7 +197,7 @@ public class RadioGuiScreen extends BaseGuiScreen {
             }
         }
 
-        RenderSystem.disableScissor();
+        disableScissor();
     }
 
     private int findWordStart(int position) {

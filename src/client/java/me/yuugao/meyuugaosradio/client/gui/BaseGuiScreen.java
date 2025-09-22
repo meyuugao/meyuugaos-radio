@@ -274,6 +274,10 @@ public abstract class BaseGuiScreen extends Screen {
         RenderSystem.enableScissor((int) e, (int) f, Math.max(0, (int) g), Math.max(0, (int) h));
     }
 
+    protected void disableScissor() {
+        RenderSystem.disableScissor();
+    }
+
     protected abstract Identifier getGuiTexture();
 
     protected abstract int getGuiWidth();
