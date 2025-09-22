@@ -21,11 +21,11 @@ public abstract class BaseGuiScreen extends Screen {
     protected int x;
     protected int y;
     protected float volume;
-    protected boolean volumeTextFieldFocused = false;
-    protected int volumeCursorPosition = 0;
-    protected boolean volumeCursorVisible = true;
+    protected boolean volumeTextFieldFocused;
+    protected int volumeCursorPosition;
+    protected boolean volumeCursorVisible;
     protected long volumeLastCursorTime;
-    protected boolean volumeSliderDragging = false;
+    protected boolean volumeSliderDragging;
     protected int dragOffsetY;
 
     protected BaseGuiScreen(BlockPos pos, float volume) {
@@ -33,6 +33,10 @@ public abstract class BaseGuiScreen extends Screen {
 
         this.pos = pos;
         this.volume = volume;
+        this.volumeTextFieldFocused = false;
+        this.volumeCursorPosition = 0;
+        this.volumeCursorVisible = true;
+        this.volumeSliderDragging = false;
     }
 
     @Override
