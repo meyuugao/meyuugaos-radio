@@ -8,6 +8,7 @@ import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
@@ -24,11 +25,11 @@ public abstract class BaseGuiScreen extends Screen {
     protected int x;
     protected int y;
     protected float volume;
-    protected boolean volumeTextFieldFocused = false;
-    protected int volumeCursorPosition = 0;
-    protected boolean volumeCursorVisible = true;
+    protected boolean volumeTextFieldFocused;
+    protected int volumeCursorPosition;
+    protected boolean volumeCursorVisible;
     protected long volumeLastCursorTime;
-    protected boolean volumeSliderDragging = false;
+    protected boolean volumeSliderDragging;
     protected int dragOffsetY;
 
     protected BaseGuiScreen(BlockPos pos, float volume) {
@@ -45,6 +46,10 @@ public abstract class BaseGuiScreen extends Screen {
         x = (width - getGuiWidth()) / 2;
         y = (height - getGuiHeight()) / 2;
         volumeLastCursorTime = System.currentTimeMillis();
+        volumeTextFieldFocused = false;
+        volumeCursorPosition = 0;
+        volumeCursorVisible = true;
+        volumeSliderDragging = false;
     }
 
     @Override
@@ -256,6 +261,17 @@ public abstract class BaseGuiScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    protected void enableScissor(int x1, int y1, int x2, int y2) {
+        Window window = MinecraftClient.getInstance().getWindow();
+        int i = window.getFramebufferHeight();
+        double d = window.getScaleFactor();
+        double e = (double)x1 * d;
+        double f = (double)i - (double)y2 * d;
+        double g = (double)(x2 - x1) * d;
+        double h = (double)(y2 - y1) * d;
+        RenderSystem.enableScissor((int)e, (int)f, Math.max(0, (int)g), Math.max(0, (int)h));
     }
 
     protected abstract Identifier getGuiTexture();
