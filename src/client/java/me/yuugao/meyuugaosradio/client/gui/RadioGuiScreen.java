@@ -17,16 +17,20 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 public class RadioGuiScreen extends BaseGuiScreen {
     private String streamUrl;
-    private boolean textFieldFocused = false;
-    private int cursorPosition = 0;
-    private boolean cursorVisible = true;
-    private int textOffset = 0;
+    private boolean textFieldFocused;
+    private int cursorPosition;
+    private boolean cursorVisible;
+    private int textOffset;
     private long lastCursorTime;
 
     public RadioGuiScreen(BlockPos pos, String streamUrl, float volume) {
         super(pos, volume);
 
         this.streamUrl = streamUrl;
+        this.textFieldFocused = false;
+        this.cursorPosition = 0;
+        this.cursorVisible = true;
+        this.textOffset = 0;
     }
 
     @Override
