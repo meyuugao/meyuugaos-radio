@@ -9,7 +9,6 @@ import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -19,16 +18,20 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 public class RadioGuiScreen extends BaseGuiScreen {
     private String streamUrl;
-    private boolean textFieldFocused = false;
-    private int cursorPosition = 0;
-    private boolean cursorVisible = true;
-    private int textOffset = 0;
+    private boolean textFieldFocused;
+    private int cursorPosition;
+    private boolean cursorVisible;
+    private int textOffset;
     private long lastCursorTime;
 
     public RadioGuiScreen(BlockPos pos, String streamUrl, float volume) {
         super(pos, volume);
 
         this.streamUrl = streamUrl;
+        this.textFieldFocused = false;
+        this.cursorPosition = 0;
+        this.cursorVisible = true;
+        this.textOffset = 0;
     }
 
     @Override
@@ -173,7 +176,7 @@ public class RadioGuiScreen extends BaseGuiScreen {
         int textX = x + TEXT_FIELD_X1 + 2;
         int textY = y + TEXT_FIELD_Y1;
 
-        RenderSystem.enableScissor(
+        enableScissor(
                 x + TEXT_FIELD_X1,
                 y + TEXT_FIELD_Y1,
                 x + TEXT_FIELD_X2,
