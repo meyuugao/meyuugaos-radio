@@ -51,7 +51,6 @@ public class ServerEventsManager {
                         }
 
                         BlockPos pos = abstractEnergyBlockEntity.getPos();
-                        serverWorld.removeBlockEntity(pos);
                         ((AbstractEnergyBlock) state.getBlock()).onDisabled(serverWorld, pos, state);
 
                         if (serverWorld.getBlockEntity(pos) instanceof AbstractEnergyBlockEntity newAbstractEnergyBlockEntity) {
