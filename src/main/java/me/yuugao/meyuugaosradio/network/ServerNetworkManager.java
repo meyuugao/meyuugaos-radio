@@ -177,12 +177,10 @@ public class ServerNetworkManager {
                 radioBlockEntity.setStreamUrl(streamUrl);
             }
 
-            if (state) {
-                if (block instanceof RadioBlock radioBlock) {
+            if (block instanceof RadioBlock radioBlock) {
+                if (state) {
                     radioBlock.onDisabled(world, pos, world.getBlockState(pos));
-                }
-            } else {
-                if (block instanceof RadioBlock radioBlock) {
+                } else {
                     radioBlock.onEnabled(world, pos, world.getBlockState(pos), radioBlockEntity.getStreamUrl());
                 }
             }
@@ -195,12 +193,10 @@ public class ServerNetworkManager {
             boolean state = speakerBlockEntity.getCachedState().get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED);
             Block block = world.getBlockState(pos).getBlock();
 
-            if (state) {
-                if (block instanceof SpeakerBlock speakerBlock) {
+            if (block instanceof SpeakerBlock speakerBlock) {
+                if (state) {
                     speakerBlock.onDisabled(world, pos, world.getBlockState(pos));
-                }
-            } else {
-                if (block instanceof SpeakerBlock speakerBlock) {
+                } else {
                     speakerBlock.onEnabled(world, pos, world.getBlockState(pos));
                 }
             }
