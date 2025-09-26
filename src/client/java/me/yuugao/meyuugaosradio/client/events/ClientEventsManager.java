@@ -16,7 +16,7 @@ public class ClientEventsManager {
     public static void initialize() {
         lastWorld = null;
         isPaused = false;
-        
+
         WorldRenderEvents.AFTER_TRANSLUCENT.register(worldRenderContext -> {
             MatrixStack matrixStack = worldRenderContext.matrixStack();
             if (matrixStack == null) return;
