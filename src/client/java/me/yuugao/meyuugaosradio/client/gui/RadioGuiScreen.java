@@ -7,7 +7,6 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
