@@ -10,10 +10,13 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 
 public class ClientEventsManager {
-    private static ClientWorld lastWorld = null;
-    private static boolean isPaused = false;
+    private static ClientWorld lastWorld;
+    private static boolean isPaused;
 
     public static void initialize() {
+        lastWorld = null;
+        isPaused = false;
+        
         WorldRenderEvents.AFTER_TRANSLUCENT.register(worldRenderContext -> {
             MatrixStack matrixStack = worldRenderContext.matrixStack();
             if (matrixStack == null) return;
