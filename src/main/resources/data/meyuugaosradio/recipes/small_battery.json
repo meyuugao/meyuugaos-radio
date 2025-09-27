@@ -7,10 +7,10 @@
   ],
   "key": {
     "C": {
-      "item": "minecraft:copper_ingot"
+      "item": "techreborn:copper_nugget"
     },
     "I": {
-      "item": "minecraft:iron_ingot"
+      "item": "minecraft:iron_nugget"
     },
     "R": {
       "item": "minecraft:redstone"
