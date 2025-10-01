@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    " C ",
+    " C "
+  ],
+  "key": {
+    "C": {
+      "item": "techreborn:copper_nugget"
+    }
+  },
+  "result": {
+    "item": "meyuugaosradio:antenna",
+    "count": 1
+  }
+}

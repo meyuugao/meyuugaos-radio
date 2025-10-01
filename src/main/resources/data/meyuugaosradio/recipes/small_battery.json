@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "IRI",
+    "ICI"
+  ],
+  "key": {
+    "C": {
+      "item": "techreborn:copper_nugget"
+    },
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "meyuugaosradio:small_battery",
+    "count": 1
+  }
+}
