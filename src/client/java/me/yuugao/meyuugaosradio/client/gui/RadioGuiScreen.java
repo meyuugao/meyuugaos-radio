@@ -47,9 +47,6 @@ public class RadioGuiScreen extends BaseGuiScreen {
 
             if (mouseX >= buttonX && mouseX <= buttonX + RADIO_BUTTON_WIDTH &&
                     mouseY >= buttonY && mouseY <= buttonY + RADIO_BUTTON_HEIGHT) {
-                if (this.streamUrl.endsWith("live.m3u8")) {
-                    this.streamUrl = this.streamUrl.substring(0, this.streamUrl.length() - 9) + "aac_hifi.m3u8";
-                }
                 ClientNetworkManager.sendClientRadioStateSwitchPacket(this.pos, this.streamUrl);
                 return true;
             }
