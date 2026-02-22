@@ -16,6 +16,6 @@ public class RadioClient implements ClientModInitializer {
         ClientNetworkManager.initialize();
         ClientEventsManager.initialize();
 
-        CLIENT_LOGGER.info("MeYuugaos Radio mod initialized!");
+        CLIENT_LOGGER.info("[CLIENT] MeYuugaos Radio mod initialized!");
     }
 }
