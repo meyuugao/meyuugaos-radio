@@ -22,8 +22,6 @@ import java.util.concurrent.locks.LockSupport;
 import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
     private static final Map<String, AtomicBoolean> startingStreams = new ConcurrentHashMap<>();
 
@@ -117,10 +115,12 @@ public class ClientHlsAudioManager {
         private final AtomicBoolean isPlaying;
         private final AtomicBoolean isStarting;
         private final BlockingQueue<byte[]> audioQueue;
+        private ScheduledExecutorService scheduler;
 
         private Process ffmpegProcess;
         private Thread playbackThread;
         private Thread readThread;
+
         private volatile boolean stopRequested;
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
@@ -145,6 +145,8 @@ public class ClientHlsAudioManager {
             try {
                 stopRequested = false;
                 audioQueue.clear();
+
+                scheduler = Executors.newScheduledThreadPool(1);
 
                 final int frameSize = channels * 2;
                 final long bytesPerSecond = (long) sampleRate * channels * 2;
@@ -336,6 +338,10 @@ public class ClientHlsAudioManager {
             if (playbackThread != null) {
                 playbackThread.interrupt();
             }
+
+            if (!scheduler.isShutdown()) {
+                scheduler.shutdownNow();
+            }
         }
 
         public void setVolume(float volume) {
@@ -347,7 +353,6 @@ public class ClientHlsAudioManager {
             if (volumeControl != null) {
                 if (currentVolume > 0.001f) {
                     float effectiveVolume = (float) Math.pow(currentVolume, 0.3);
-                    effectiveVolume = Math.min(effectiveVolume, 1.0f);
 
                     if (volumeControl.getType() == FloatControl.Type.VOLUME) {
                         float min = volumeControl.getMinimum();
@@ -357,8 +362,15 @@ public class ClientHlsAudioManager {
                     } else if (volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
                         float minDB = volumeControl.getMinimum();
                         float maxDB = volumeControl.getMaximum();
-                        float gainDB = minDB + (maxDB - minDB) * effectiveVolume;
-                        volumeControl.setValue(gainDB);
+
+                        float gainDB;
+                        if (effectiveVolume > 1.0f) {
+                            gainDB = (effectiveVolume - 1.0f) * 6.0f;
+                        } else {
+                            gainDB = minDB * (1.0f - effectiveVolume);
+                        }
+
+                        volumeControl.setValue(Math.max(minDB, Math.min(maxDB, gainDB)));
                     }
                 } else {
                     if (volumeControl.getType() == FloatControl.Type.VOLUME || volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
@@ -376,24 +388,9 @@ public class ClientHlsAudioManager {
     public static void cleanup() {
         stopAudioInstances();
         startingStreams.clear();
-        shutdownScheduler();
     }
 
     public static void stopAudioInstances() {
         audioInstances.values().forEach(ClientAudioInstance::stopStream);
-    }
-
-    private static void shutdownScheduler() {
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            CLIENT_LOGGER.warn("Scheduler shutdown interrupted: {}", e.getMessage());
-            CLIENT_LOGGER.debug("Scheduler shutdown interrupt details: ", e);
-            scheduler.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
     }
 }
