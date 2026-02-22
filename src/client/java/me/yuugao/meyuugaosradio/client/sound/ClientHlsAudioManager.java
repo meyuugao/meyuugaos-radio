@@ -10,6 +10,7 @@ import net.minecraft.sound.SoundCategory;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.sound.sampled.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,9 +18,6 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
-
-import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
@@ -115,11 +113,10 @@ public class ClientHlsAudioManager {
         private final AtomicBoolean isPlaying;
         private final AtomicBoolean isStarting;
         private final BlockingQueue<byte[]> audioQueue;
+        private final int frameSize;
         private ScheduledExecutorService scheduler;
 
         private Process ffmpegProcess;
-        private Thread playbackThread;
-        private Thread readThread;
 
         private volatile boolean stopRequested;
         private SourceDataLine audioLine;
@@ -130,11 +127,147 @@ public class ClientHlsAudioManager {
             this.streamUrl = streamUrl;
             this.sampleRate = sampleRate;
             this.channels = channels;
+            this.frameSize = channels * 2;
             this.isPlaying = new AtomicBoolean(false);
             this.isStarting = new AtomicBoolean(false);
-            this.audioQueue = new LinkedBlockingQueue<>(30);
+            this.audioQueue = new LinkedBlockingQueue<>(300);
             this.stopRequested = false;
             this.currentVolume = 0.0f;
+        }
+
+        private void initializeAudioLine() throws LineUnavailableException {
+            AudioFormat format = new AudioFormat(sampleRate, 16, channels, true, false);
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+
+            if (!AudioSystem.isLineSupported(info)) {
+                throw new LineUnavailableException("Audio format not supported");
+            }
+
+            audioLine = (SourceDataLine) AudioSystem.getLine(info);
+            audioLine.open(format, 8192 * 8);
+
+            if (audioLine.isControlSupported(FloatControl.Type.VOLUME)) {
+                volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.VOLUME);
+            } else if (audioLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.MASTER_GAIN);
+            }
+        }
+
+        private Runnable createConnectTask(AtomicInteger restartAttempts) {
+            return new Runnable() {
+                @Override
+                public void run() {
+                    if (stopRequested || restartAttempts.get() >= 3) {
+                        return;
+                    }
+
+                    try {
+                        ProcessBuilder pb = getProcessBuilder();
+                        ffmpegProcess = pb.start();
+
+                        InputStream audioStream = ffmpegProcess.getInputStream();
+                        byte[] buffer = new byte[16384];
+                        int bytesRead;
+
+                        while (!stopRequested && (bytesRead = audioStream.read(buffer)) != -1) {
+                            if (bytesRead > 0) {
+                                int alignedBytes = (bytesRead / frameSize) * frameSize;
+                                if (alignedBytes > 0) {
+                                    byte[] audioData = new byte[alignedBytes];
+                                    System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
+
+                                    int queueSize = audioQueue.size();
+                                    boolean offered;
+
+                                    if (queueSize > 250) {
+                                        audioQueue.poll();
+                                        offered = audioQueue.offer(audioData);
+                                        if (!offered && !stopRequested) {
+                                            CLIENT_LOGGER.debug("Failed to offer audio data after queue cleanup");
+                                        }
+                                    } else if (queueSize < 50) {
+                                        int attempts = 0;
+                                        offered = false;
+                                        while (!offered && !stopRequested && attempts < 10) {
+                                            offered = audioQueue.offer(audioData);
+                                            if (!offered) {
+                                                attempts++;
+                                                Thread.yield();
+                                            }
+                                        }
+                                        if (!offered && !stopRequested) {
+                                            CLIENT_LOGGER.debug("Failed to offer audio data after {} attempts", attempts);
+                                        }
+                                    } else {
+                                        offered = audioQueue.offer(audioData);
+                                        if (!offered && !stopRequested) {
+                                            CLIENT_LOGGER.debug("Failed to offer audio data, queue full");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!stopRequested) {
+                            restartAttempts.incrementAndGet();
+                            scheduler.schedule(this, 2, TimeUnit.SECONDS);
+                        }
+                    } catch (Exception e) {
+                        if (!stopRequested) {
+                            int attempts = restartAttempts.incrementAndGet();
+                            if (attempts < 3) {
+                                scheduler.schedule(this, 2, TimeUnit.SECONDS);
+                            } else {
+                                stopStream();
+                            }
+                        }
+                    } finally {
+                        if (ffmpegProcess != null) {
+                            ffmpegProcess.destroy();
+                        }
+                    }
+                }
+            };
+        }
+
+        private Thread createReadThread() {
+            return new Thread(() -> {
+                AtomicInteger restartAttempts = new AtomicInteger(0);
+                final int maxRestartAttempts = 3;
+                Runnable connectTask = createConnectTask(restartAttempts);
+                scheduler.execute(connectTask);
+            });
+        }
+
+        private Thread createPlaybackThread() {
+            return new Thread(() -> {
+                try {
+                    initializeAudioLine();
+                    updateAudioVolume();
+                    audioLine.start();
+
+                    while (!stopRequested || !audioQueue.isEmpty()) {
+                        byte[] audioData = audioQueue.poll();
+
+                        if (audioData != null) {
+                            audioLine.write(audioData, 0, audioData.length);
+                        } else if (!stopRequested) {
+                            Thread.yield();
+                        }
+                    }
+
+                    audioLine.drain();
+                } catch (Exception e) {
+                    if (!stopRequested) {
+                        stopStream();
+                    }
+                } finally {
+                    if (audioLine != null) {
+                        audioLine.close();
+                    }
+                    volumeControl = null;
+                }
+            });
         }
 
         public void startStream() {
@@ -148,130 +281,11 @@ public class ClientHlsAudioManager {
 
                 scheduler = new ScheduledThreadPoolExecutor(1);
 
-                final int frameSize = channels * 2;
-                final long bytesPerSecond = (long) sampleRate * channels * 2;
+                Thread readThread = createReadThread();
+                Thread playbackThread = createPlaybackThread();
 
-                readThread = new Thread(() -> {
-                    final AtomicInteger restartAttempts = new AtomicInteger(0);
-                    final int maxRestartAttempts = 3;
-
-                    Runnable connectTask = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (stopRequested || restartAttempts.get() >= maxRestartAttempts) {
-                                return;
-                            }
-
-                            try {
-                                ProcessBuilder pb = getProcessBuilder();
-                                ffmpegProcess = pb.start();
-
-                                InputStream audioStream = ffmpegProcess.getInputStream();
-                                byte[] buffer = new byte[4096];
-                                int bytesRead;
-
-                                while (!stopRequested && (bytesRead = audioStream.read(buffer)) != -1) {
-                                    if (bytesRead > 0) {
-                                        int alignedBytes = (bytesRead / frameSize) * frameSize;
-                                        if (alignedBytes > 0) {
-                                            byte[] audioData = new byte[alignedBytes];
-                                            System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
-
-                                            if (!audioQueue.offer(audioData, 100, TimeUnit.MILLISECONDS)) {
-                                                CLIENT_LOGGER.info("Audio queue is full, skipping...");
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (!stopRequested) {
-                                    restartAttempts.incrementAndGet();
-                                    scheduler.schedule(this, 2, TimeUnit.SECONDS);
-                                }
-
-                                restartAttempts.set(0);
-                            } catch (Exception e) {
-                                if (!stopRequested) {
-                                    int attempts = restartAttempts.incrementAndGet();
-                                    if (attempts < maxRestartAttempts) {
-                                        CLIENT_LOGGER.info("FFMPEG connection failed, attempt {}/{}. Retrying in 2s...",
-                                                attempts, maxRestartAttempts);
-                                        CLIENT_LOGGER.debug("Connection error details: ", e);
-                                        scheduler.schedule(this, 2, TimeUnit.SECONDS);
-                                    } else {
-                                        CLIENT_LOGGER.warn("FFMPEG connection failed after {} attempts. Stopping stream",
-                                                attempts);
-                                        CLIENT_LOGGER.debug("Final connection error details: ", e);
-                                        stopStream();
-                                    }
-                                }
-                            } finally {
-                                if (ffmpegProcess != null) {
-                                    ffmpegProcess.destroy();
-                                }
-                            }
-                        }
-                    };
-
-                    scheduler.execute(connectTask);
-                });
-
-                playbackThread = new Thread(() -> {
-                    try {
-                        AudioFormat format = new AudioFormat(sampleRate, 16, channels, true, false);
-                        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
-
-                        if (!AudioSystem.isLineSupported(info)) {
-                            return;
-                        }
-
-                        audioLine = (SourceDataLine) AudioSystem.getLine(info);
-                        audioLine.open(format, 4096 * 8);
-
-                        if (audioLine.isControlSupported(FloatControl.Type.VOLUME)) {
-                            volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.VOLUME);
-                        } else if (audioLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                            volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.MASTER_GAIN);
-                        }
-
-                        updateAudioVolume();
-                        audioLine.start();
-
-                        long nextWriteTime = System.nanoTime();
-
-                        while (!stopRequested || !audioQueue.isEmpty()) {
-                            byte[] audioData = audioQueue.poll(50, TimeUnit.MILLISECONDS);
-                            if (audioData != null && audioData.length > 0) {
-                                long currentTime = System.nanoTime();
-                                if (currentTime < nextWriteTime) {
-                                    long sleepNanos = nextWriteTime - currentTime;
-                                    LockSupport.parkNanos(sleepNanos);
-                                }
-
-                                audioLine.write(audioData, 0, audioData.length);
-                                long nanosToAdd = (audioData.length * 1000000000L) / bytesPerSecond;
-                                nextWriteTime += nanosToAdd;
-                            } else if (stopRequested) {
-                                break;
-                            }
-                        }
-
-                        audioLine.drain();
-                    } catch (Exception e) {
-                        if (!stopRequested) {
-                            CLIENT_LOGGER.warn("Playback thread aborted due to exception: {}",
-                                    e.getMessage());
-                            CLIENT_LOGGER.debug("Playback thread abort details: ", e);
-                            stopStream();
-                        }
-                    } finally {
-                        if (audioLine != null) {
-                            audioLine.close();
-                        }
-                        volumeControl = null;
-                    }
-                });
-
+                readThread.setPriority(Thread.MAX_PRIORITY);
+                playbackThread.setPriority(Thread.NORM_PRIORITY);
                 readThread.setDaemon(true);
                 playbackThread.setDaemon(true);
                 readThread.start();
@@ -296,14 +310,12 @@ public class ClientHlsAudioManager {
                     "-reconnect", "1",
                     "-reconnect_streamed", "1",
                     "-reconnect_delay_max", "2",
-                    "-reconnect_on_network_error", "1",
-                    "-fflags", "+discardcorrupt+genpts+igndts",
-                    "-avoid_negative_ts", "make_zero",
-                    "-max_delay", "500000",
-                    "-bufsize", String.valueOf(sampleRate * 2),
+                    "-buffer_size", "2048000",
+                    "-max_delay", "2000000",
+                    "-probesize", "10000000",
+                    "-analyzeduration", "10000000",
                     "-threads", "1",
                     "-nostats",
-                    "-use_wallclock_as_timestamps", "1",
                     "pipe:1"
             };
 
@@ -323,25 +335,19 @@ public class ClientHlsAudioManager {
                 ffmpegProcess.destroy();
             }
 
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+
             audioQueue.clear();
 
             if (audioLine != null && audioLine.isOpen()) {
+                audioLine.stop();
+                audioLine.flush();
                 audioLine.close();
             }
 
             volumeControl = null;
-
-            if (readThread != null) {
-                readThread.interrupt();
-            }
-
-            if (playbackThread != null) {
-                playbackThread.interrupt();
-            }
-
-            if (!scheduler.isShutdown()) {
-                scheduler.shutdown();
-            }
         }
 
         public void setVolume(float volume) {
@@ -350,34 +356,24 @@ public class ClientHlsAudioManager {
         }
 
         private void updateAudioVolume() {
-            if (volumeControl != null) {
-                if (currentVolume > 0.001f) {
-                    float effectiveVolume = (float) Math.pow(currentVolume, 0.3);
-                    effectiveVolume = Math.min(effectiveVolume, 1.0f);
+            if (volumeControl == null) return;
 
-                    if (volumeControl.getType() == FloatControl.Type.VOLUME) {
-                        float min = volumeControl.getMinimum();
-                        float max = volumeControl.getMaximum();
-                        float volume = min + (max - min) * effectiveVolume;
-                        volumeControl.setValue(volume);
-                    } else if (volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
-                        float minDB = volumeControl.getMinimum();
-                        float maxDB = volumeControl.getMaximum();
+            if (currentVolume > 0.001f) {
+                float effectiveVolume = (float) Math.pow(currentVolume, 0.3);
+                effectiveVolume = Math.min(effectiveVolume, 1.0f);
 
-                        float gainDB;
-                        if (effectiveVolume > 1.0f) {
-                            gainDB = (effectiveVolume - 1.0f) * 6.0f;
-                        } else {
-                            gainDB = minDB * (1.0f - effectiveVolume);
-                        }
-
-                        volumeControl.setValue(Math.max(minDB, Math.min(maxDB, gainDB)));
-                    }
-                } else {
-                    if (volumeControl.getType() == FloatControl.Type.VOLUME || volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
-                        volumeControl.setValue(volumeControl.getMinimum());
-                    }
+                if (volumeControl.getType() == FloatControl.Type.VOLUME) {
+                    float min = volumeControl.getMinimum();
+                    float max = volumeControl.getMaximum();
+                    volumeControl.setValue(min + (max - min) * effectiveVolume);
+                } else if (volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
+                    float minDB = volumeControl.getMinimum();
+                    float maxDB = volumeControl.getMaximum();
+                    float gainDB = minDB * (1.0f - effectiveVolume);
+                    volumeControl.setValue(Math.max(minDB, Math.min(maxDB, gainDB)));
                 }
+            } else {
+                volumeControl.setValue(volumeControl.getMinimum());
             }
         }
 

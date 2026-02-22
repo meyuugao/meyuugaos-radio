@@ -2,14 +2,16 @@ package me.yuugao.meyuugaosradio.client.gui;
 
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
-
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -46,8 +48,8 @@ public abstract class BaseGuiScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (click.button() == 0) {
             volumeTextFieldFocused = false;
 
             int trackTop = y + getVolumeSliderTrackY() + 1;
@@ -55,18 +57,18 @@ public abstract class BaseGuiScreen extends Screen {
             int thumbY = trackTop + (int) ((1.0f - volume) * (trackBottom - trackTop));
             int thumbX = x + getVolumeSliderTrackX() - 2;
 
-            if (mouseX >= thumbX && mouseX <= thumbX + VOLUME_SLIDER_THUMB_WIDTH &&
-                    mouseY >= thumbY && mouseY <= thumbY + VOLUME_SLIDER_THUMB_HEIGHT) {
+            if (click.x() >= thumbX && click.x() <= thumbX + VOLUME_SLIDER_THUMB_WIDTH &&
+                    click.y() >= thumbY && click.y() <= thumbY + VOLUME_SLIDER_THUMB_HEIGHT) {
                 volumeSliderDragging = true;
-                dragOffsetY = (int) mouseY - thumbY;
+                dragOffsetY = (int) click.y() - thumbY;
                 return true;
             }
 
             int volumeTextFieldX = x + getVolumeTextFieldX();
             int volumeTextFieldY = y + getVolumeTextFieldY();
 
-            if (mouseX >= volumeTextFieldX && mouseX <= volumeTextFieldX + VOLUME_TEXT_FIELD_WIDTH &&
-                    mouseY >= volumeTextFieldY && mouseY <= volumeTextFieldY + VOLUME_TEXT_FIELD_HEIGHT) {
+            if (click.x() >= volumeTextFieldX && click.x() <= volumeTextFieldX + VOLUME_TEXT_FIELD_WIDTH &&
+                    click.y() >= volumeTextFieldY && click.y() <= volumeTextFieldY + VOLUME_TEXT_FIELD_HEIGHT) {
                 volumeTextFieldFocused = true;
                 volumeCursorVisible = true;
                 volumeLastCursorTime = System.currentTimeMillis();
@@ -75,25 +77,25 @@ public abstract class BaseGuiScreen extends Screen {
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseReleased(Click click) {
+        if (click.button() == 0) {
             volumeSliderDragging = false;
         }
 
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (volumeSliderDragging) {
+    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+        if (volumeSliderDragging && click.button() == 0) {
             int trackTop = y + getVolumeSliderTrackY() + 1;
             int trackBottom = y + getVolumeSliderTrackY() + 1 + VOLUME_SLIDER_TRACK_HEIGHT - VOLUME_SLIDER_THUMB_HEIGHT - 2;
 
-            float adjustedMouseY = (float) mouseY - dragOffsetY;
+            float adjustedMouseY = (float) click.y() - dragOffsetY;
             float newVolume = 1.0f - Math.max(0.0f, Math.min(1.0f, (adjustedMouseY - trackTop) / (trackBottom - trackTop)));
 
             if (newVolume != volume) {
@@ -104,63 +106,67 @@ public abstract class BaseGuiScreen extends Screen {
             return true;
         }
 
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, offsetX, offsetY);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
         if (volumeTextFieldFocused) {
             String volumeText = String.valueOf((int) (volume * 100));
 
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            if (input.getKeycode() == GLFW.GLFW_KEY_ENTER || input.getKeycode() == GLFW.GLFW_KEY_KP_ENTER) {
                 volumeTextFieldFocused = false;
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_BACKSPACE) {
                 if (volumeCursorPosition > 0) {
                     String newText = volumeText.substring(0, volumeCursorPosition - 1) + volumeText.substring(volumeCursorPosition);
                     volumeCursorPosition--;
                     updateVolumeFromText(newText);
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_DELETE) {
                 if (volumeCursorPosition < volumeText.length()) {
                     String newText = volumeText.substring(0, volumeCursorPosition) + volumeText.substring(volumeCursorPosition + 1);
                     updateVolumeFromText(newText);
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
-                if (volumeCursorPosition > 0) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_LEFT) {
+                if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    volumeCursorPosition = 0;
+                } else if (volumeCursorPosition > 0) {
                     volumeCursorPosition--;
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-                if (volumeCursorPosition < volumeText.length()) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_RIGHT) {
+                if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    volumeCursorPosition = volumeText.length();
+                } else if (volumeCursorPosition < volumeText.length()) {
                     volumeCursorPosition++;
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_HOME) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_HOME) {
                 volumeCursorPosition = 0;
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_END) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_END) {
                 volumeCursorPosition = volumeText.length();
                 return true;
             }
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput input) {
         if (volumeTextFieldFocused) {
-            if ((modifiers & GLFW.GLFW_MOD_CONTROL) == 0 && Character.isDigit(chr)) {
+            if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) == 0) {
                 String volumeText = String.valueOf((int) (volume * 100));
                 String newText;
 
                 if (volumeText.equals("0") && volumeCursorPosition == 1) {
-                    newText = String.valueOf(chr);
+                    newText = input.asString();
                 } else {
-                    newText = volumeText.substring(0, volumeCursorPosition) + chr + volumeText.substring(volumeCursorPosition);
+                    newText = volumeText.substring(0, volumeCursorPosition) + input.asString() + volumeText.substring(volumeCursorPosition);
                     if (newText.length() <= 3) {
                         volumeCursorPosition++;
                     }
@@ -174,9 +180,10 @@ public abstract class BaseGuiScreen extends Screen {
             }
         }
 
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(input);
     }
 
+    @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (MinecraftClient.getInstance().world == null) return;
 
@@ -244,8 +251,11 @@ public abstract class BaseGuiScreen extends Screen {
         if (text.isEmpty()) {
             volume = 0.0f;
         } else {
-            int value = Integer.parseInt(text);
-            volume = Math.max(0, Math.min(100, value)) / 100.0f;
+            try {
+                int value = Integer.parseInt(text);
+                volume = Math.max(0, Math.min(100, value)) / 100.0f;
+            } catch (Exception ignored) {
+            }
         }
 
         if (volume == 0.0f) {

@@ -30,7 +30,7 @@ public class ServerHlsAudioManager {
             if (player != null && !player.isDisconnected()) {
                 audioInstances.values().forEach(serverAudioInstance -> {
                     if (serverAudioInstance.worldRegistryKey.equals(worldPlayerInfo.worldRegistryKey)) {
-                        float volume = serverAudioInstance.calculateVolumeForPlayer(player.getWorld(), player);
+                        float volume = serverAudioInstance.calculateVolumeForPlayer(player.getEntityWorld(), player);
                         ServerNetworkManager.sendServerVolumeUpdatePacket(player, serverAudioInstance.streamUrl, volume);
                     }
                 });
@@ -40,7 +40,7 @@ public class ServerHlsAudioManager {
 
     private static void updatePlayersList(List<ServerPlayerEntity> currentWorldPlayers) {
         currentWorldPlayers.forEach(player ->
-                allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getWorld().getRegistryKey())));
+                allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getEntityWorld().getRegistryKey())));
     }
 
     public static class ServerSoundSource {
@@ -99,7 +99,7 @@ public class ServerHlsAudioManager {
             if (soundSource != null) {
                 soundSource.direction = newDirection.normalize();
                 sendToWorldPlayers(player ->
-                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, streamUrl, calculateVolumeForPlayer(player.getWorld(), player)), soundSource.worldRegistryKey);
+                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, streamUrl, calculateVolumeForPlayer(player.getEntityWorld(), player)), soundSource.worldRegistryKey);
             }
         }
 
@@ -108,7 +108,7 @@ public class ServerHlsAudioManager {
             if (soundSource != null) {
                 soundSource.volume = volume;
                 sendToWorldPlayers(player ->
-                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, streamUrl, calculateVolumeForPlayer(player.getWorld(), player)), soundSource.worldRegistryKey);
+                        ServerNetworkManager.sendServerVolumeUpdatePacket(player, streamUrl, calculateVolumeForPlayer(player.getEntityWorld(), player)), soundSource.worldRegistryKey);
             }
         }
 
@@ -125,7 +125,7 @@ public class ServerHlsAudioManager {
                 return 0.0f;
             }
 
-            Vec3d playerPos = player.getPos().add(0, player.getEyeHeight(player.getPose()), 0);
+            Vec3d playerPos = player.getEntityPos().add(0, player.getEyeHeight(player.getPose()), 0);
             AtomicReference<Float> totalVolume = new AtomicReference<>(0.0f);
 
             soundSources.values().forEach(serverSoundSource -> {

@@ -3,12 +3,14 @@ package me.yuugao.meyuugaosradio.client.gui;
 import static me.yuugao.meyuugaosradio.Constants.RADIO_VOLUME_MULTIPLIER;
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
-
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -36,14 +38,14 @@ public class RadioGuiScreen extends BaseGuiScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (click.button() == 0) {
             textFieldFocused = false;
             int buttonX = x + RADIO_BUTTON_X;
             int buttonY = y + RADIO_BUTTON_Y;
 
-            if (mouseX >= buttonX && mouseX <= buttonX + RADIO_BUTTON_WIDTH &&
-                    mouseY >= buttonY && mouseY <= buttonY + RADIO_BUTTON_HEIGHT) {
+            if (click.x() >= buttonX && click.x() <= buttonX + RADIO_BUTTON_WIDTH &&
+                    click.y() >= buttonY && click.y() <= buttonY + RADIO_BUTTON_HEIGHT) {
                 ClientNetworkManager.sendClientRadioStateSwitchPacket(this.pos, this.streamUrl);
                 return true;
             }
@@ -51,8 +53,8 @@ public class RadioGuiScreen extends BaseGuiScreen {
             int textFieldScreenX = x + TEXT_FIELD_X1;
             int textFieldScreenY = y + TEXT_FIELD_Y1;
 
-            if (mouseX >= textFieldScreenX && mouseX <= textFieldScreenX + TEXT_FIELD_BORDER_WIDTH &&
-                    mouseY >= textFieldScreenY && mouseY <= textFieldScreenY + TEXT_FIELD_BORDER_HEIGHT) {
+            if (click.x() >= textFieldScreenX && click.x() <= textFieldScreenX + TEXT_FIELD_BORDER_WIDTH &&
+                    click.y() >= textFieldScreenY && click.y() <= textFieldScreenY + TEXT_FIELD_BORDER_HEIGHT) {
                 textFieldFocused = true;
                 cursorVisible = true;
                 lastCursorTime = System.currentTimeMillis();
@@ -62,18 +64,18 @@ public class RadioGuiScreen extends BaseGuiScreen {
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
         if (textFieldFocused) {
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            if (input.getKeycode() == GLFW.GLFW_KEY_ENTER || input.getKeycode() == GLFW.GLFW_KEY_KP_ENTER) {
                 textFieldFocused = false;
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_BACKSPACE) {
                 if (!streamUrl.isEmpty() && cursorPosition > 0) {
-                    if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
                         int wordStart = findWordStart(cursorPosition);
                         streamUrl = streamUrl.substring(0, wordStart) + streamUrl.substring(cursorPosition);
                         cursorPosition = wordStart;
@@ -84,9 +86,9 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     updateTextOffset();
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_DELETE) {
                 if (cursorPosition < streamUrl.length()) {
-                    if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
                         int wordEnd = findWordBoundary(cursorPosition);
                         streamUrl = streamUrl.substring(0, cursorPosition) + streamUrl.substring(wordEnd);
                     } else {
@@ -95,9 +97,9 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     updateTextOffset();
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_LEFT) {
                 if (cursorPosition > 0) {
-                    if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
                         cursorPosition = findWordStart(cursorPosition);
                     } else {
                         cursorPosition--;
@@ -105,9 +107,9 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     updateTextOffset();
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_RIGHT) {
                 if (cursorPosition < streamUrl.length()) {
-                    if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
                         cursorPosition = findWordBoundary(cursorPosition);
                     } else {
                         cursorPosition++;
@@ -115,15 +117,15 @@ public class RadioGuiScreen extends BaseGuiScreen {
                     updateTextOffset();
                 }
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_HOME) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_HOME) {
                 cursorPosition = 0;
                 updateTextOffset();
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_END) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_END) {
                 cursorPosition = streamUrl.length();
                 updateTextOffset();
                 return true;
-            } else if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+            } else if (input.getKeycode() == GLFW.GLFW_KEY_V && (input.modifiers() & GLFW.GLFW_MOD_CONTROL) != 0) {
                 String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
                 if (clipboard != null && !clipboard.isEmpty()) {
                     streamUrl = streamUrl.substring(0, cursorPosition) + clipboard + streamUrl.substring(cursorPosition);
@@ -134,21 +136,21 @@ public class RadioGuiScreen extends BaseGuiScreen {
             }
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput input) {
         if (textFieldFocused) {
-            if ((modifiers & GLFW.GLFW_MOD_CONTROL) == 0) {
-                streamUrl = streamUrl.substring(0, cursorPosition) + chr + streamUrl.substring(cursorPosition);
+            if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) == 0) {
+                streamUrl = streamUrl.substring(0, cursorPosition) + input.asString() + streamUrl.substring(cursorPosition);
                 cursorPosition++;
                 updateTextOffset();
                 return true;
             }
         }
 
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(input);
     }
 
     @Override
