@@ -140,7 +140,7 @@ public class ServerHlsAudioManager {
                     return;
                 }
 
-                float distanceFactor = (float) (1.0 / (1.0 + distance * 0.5));
+                float distanceFactor = (float) (serverSoundSource.volume / (1.0 + distance * 0.5));
                 distanceFactor *= (1.0f - (float) (distance / serverSoundSource.maxRange));
 
                 float obstructionFactor = calculateObstructionFactor(serverSoundSource.position, playerPos, world, serverSoundSource.direction);
@@ -151,11 +151,11 @@ public class ServerHlsAudioManager {
                 float coneWidth = 0.4f;
                 directionFactor = (float) Math.pow(directionFactor, coneWidth);
 
-                float sourceVolume = serverSoundSource.volume * distanceFactor * obstructionFactor * directionFactor;
+                float sourceVolume = distanceFactor * obstructionFactor * directionFactor;
                 totalVolume.updateAndGet(v -> v + sourceVolume);
             });
 
-            return Math.min(totalVolume.get(), 1.0f);
+            return Math.min(totalVolume.get(), 2.0f);
         }
 
         private float calculateObstructionFactor(Vec3d source, Vec3d target, World world, Vec3d direction) {
