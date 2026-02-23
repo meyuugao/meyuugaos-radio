@@ -19,5 +19,7 @@
   "error.notenoughenergy": "Не хватает энергии, чтобы сделать это!",
   "text.autoconfig.meyuugaosradio_client.title": "Настройки MeYuugaos Radio",
   "text.autoconfig.meyuugaosradio_client.option.volume": "Громкость",
+  "text.autoconfig.meyuugaosradio_client.option.audioBufferSize": "Размер буфера аудио",
+  "text.autoconfig.meyuugaosradio_client.option.audioBufferSize.@Tooltip": "Размер буфера (в пакетах, ~23 мс/пакет). Меньше = быстрее реакция, больше = стабильнее.",
   "gamerule.meyuugaosradioConnectRadius": "Максимальный радиус подключения радио"
 }
