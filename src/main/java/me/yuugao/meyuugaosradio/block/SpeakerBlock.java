@@ -56,7 +56,8 @@ public class SpeakerBlock extends AbstractEnergyBlock {
         if (world.getBlockEntity(pos) instanceof SpeakerBlockEntity speakerBlockEntity) {
             if (speakerBlockEntity.getRadioPos() != null) {
                 BlockEntity blockEntity = world.getBlockEntity(speakerBlockEntity.getRadioPos());
-                if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty()) {
+                if (blockEntity instanceof RadioBlockEntity radioBlockEntity && !radioBlockEntity.getStreamUrl().isEmpty()
+                        && radioBlockEntity.isEnabled()) {
                     ServerHlsAudioManager.addSoundSource(radioBlockEntity.getStreamUrl(), pos, this.getVecDirection(world, pos),
                             speakerBlockEntity.getVolume() * SPEAKER_VOLUME_MULTIPLIER, SPEAKER_MAX_RANGE, world.getRegistryKey());
                 }
