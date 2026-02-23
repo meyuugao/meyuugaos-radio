@@ -6,6 +6,7 @@ import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
 import me.yuugao.meyuugaosradio.client.network.ClientNetworkManager;
 
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -16,19 +17,19 @@ public class SpeakerGuiScreen extends BaseGuiScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (click.button() == 0) {
             int buttonX = x + SPEAKER_BUTTON_X;
             int buttonY = y + SPEAKER_BUTTON_Y;
 
-            if (mouseX >= buttonX && mouseX <= buttonX + SPEAKER_BUTTON_WIDTH &&
-                    mouseY >= buttonY && mouseY <= buttonY + SPEAKER_BUTTON_HEIGHT) {
+            if (click.x() >= buttonX && click.x() <= buttonX + SPEAKER_BUTTON_WIDTH &&
+                    click.y() >= buttonY && click.y() <= buttonY + SPEAKER_BUTTON_HEIGHT) {
                 ClientNetworkManager.sendClientSpeakerStateSwitchPacket(this.pos);
                 return true;
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override

@@ -113,7 +113,7 @@ public class RemoteControllerItem extends Item {
         Vec3d end = start.add(look.multiply(64));
 
         RaycastContext context = new RaycastContext(start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player);
-        return player.getWorld().raycast(context);
+        return player.getEntityWorld().raycast(context);
     }
 
     @Override

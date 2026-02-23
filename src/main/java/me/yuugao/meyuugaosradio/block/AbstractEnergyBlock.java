@@ -81,8 +81,8 @@ public abstract class AbstractEnergyBlock extends BlockWithEntity {
         if (be instanceof AbstractEnergyBlockEntity abstractEnergyBlockEntity) {
             NbtComponent nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
             if (nbt != null) {
-                abstractEnergyBlockEntity.setEnergy(nbt.getNbt().getLong("Energy", 0L));
-                abstractEnergyBlockEntity.setVolume(nbt.getNbt().getFloat("Volume", 0.5f));
+                abstractEnergyBlockEntity.setEnergy(nbt.copyNbt().getLong("Energy", 0L));
+                abstractEnergyBlockEntity.setVolume(nbt.copyNbt().getFloat("Volume", 0.5f));
             }
         }
     }

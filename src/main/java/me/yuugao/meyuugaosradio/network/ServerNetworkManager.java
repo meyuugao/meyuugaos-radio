@@ -55,7 +55,7 @@ public class ServerNetworkManager {
 
         ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientBlocksUpdatePayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
-            context.server().execute(() -> serverSpeakerUse(player, payload.enabled(), payload.blocks(), player.getWorld(), payload.speakerPos()));
+            context.server().execute(() -> serverSpeakerUse(player, payload.enabled(), payload.blocks(), player.getEntityWorld(), payload.speakerPos()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientRemotecontrollerOnClickPayload.ID, (payload, context) -> {
@@ -63,24 +63,24 @@ public class ServerNetworkManager {
             context.server().execute(() -> {
                 ItemStack stack = player.getMainHandStack();
                 if (stack.getItem() instanceof RemoteControllerItem remoteControllerItem) {
-                    remoteControllerItem.onLeftClick(player.getWorld(), player);
+                    remoteControllerItem.onLeftClick(player.getEntityWorld(), player);
                 }
             });
         });
 
         ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientRadioStateSwitchPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
-            context.server().execute(() -> serverRadioStateSwitch(player.getWorld(), payload.pos(), payload.streamUrl()));
+            context.server().execute(() -> serverRadioStateSwitch(player.getEntityWorld(), payload.pos(), payload.streamUrl()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientSpeakerStateSwitchPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
-            context.server().execute(() -> serverSpeakerStateSwitch(player.getWorld(), payload.pos()));
+            context.server().execute(() -> serverSpeakerStateSwitch(player.getEntityWorld(), payload.pos()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(NetworkConstants.ClientVolumeUpdatePayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
-            context.server().execute(() -> serverVolumeUpdate(player.getWorld(), payload.pos(), payload.volume(), payload.volumeMultiplier()));
+            context.server().execute(() -> serverVolumeUpdate(player.getEntityWorld(), payload.pos(), payload.volume(), payload.volumeMultiplier()));
         });
     }
 

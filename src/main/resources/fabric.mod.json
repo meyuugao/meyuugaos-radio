@@ -38,8 +38,8 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "techreborn": ">=5.14.2",
-    "reborncore": ">=5.14.2",
-    "cloth-config": ">=19.0.147"
+    "techreborn": ">=5.15.0",
+    "reborncore": ">=5.15.0",
+    "cloth-config": ">=20.0.148"
   }
 }

@@ -1,11 +1,15 @@
 package me.yuugao.meyuugaosradio.client.events;
 
+import static me.yuugao.meyuugaosradio.Constants.CLIENT_LOGGER;
+
+
 import me.yuugao.meyuugaosradio.client.render.BlockGlowRenderer;
 import me.yuugao.meyuugaosradio.client.sound.ClientHlsAudioManager;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 
@@ -17,14 +21,15 @@ public class ClientEventsManager {
         lastWorld = null;
         isPaused = false;
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(worldRenderContext -> {
-            MatrixStack matrixStack = worldRenderContext.matrixStack();
+        WorldRenderEvents.END_MAIN.register(worldRenderContext -> {
+            MatrixStack matrixStack = worldRenderContext.matrices();
+            GameRenderer gameRenderer = worldRenderContext.gameRenderer();
             if (matrixStack == null) return;
 
             matrixStack.push();
-            matrixStack.translate(-worldRenderContext.camera().getPos().x,
-                    -worldRenderContext.camera().getPos().y,
-                    -worldRenderContext.camera().getPos().z);
+            matrixStack.translate(-gameRenderer.getCamera().getPos().x,
+                    -gameRenderer.getCamera().getPos().y,
+                    -gameRenderer.getCamera().getPos().z);
 
             BlockGlowRenderer.render(matrixStack, worldRenderContext.consumers());
 
