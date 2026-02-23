@@ -44,11 +44,18 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    include modApi("teamreborn:energy:2.3.0")
+    include modApi("teamreborn:energy:2.3.0") {
+        exclude(group: "net.fabricmc.fabric-api")
+        exclude(group: "net.fabricmc", module: "fabric-loader")
+    }
     modApi("me.shedaniel.cloth:cloth-config-fabric:6.2.57") {
         exclude(group: "net.fabricmc.fabric-api")
+        exclude(group: "net.fabricmc", module: "fabric-loader")
     }
-    modApi("com.terraformersmc:modmenu:3.0.0")
+    modApi("com.terraformersmc:modmenu:3.0.0") {
+        exclude(group: "net.fabricmc.fabric-api")
+        exclude(group: "net.fabricmc", module: "fabric-loader")
+    }
 }
 
 processResources {
