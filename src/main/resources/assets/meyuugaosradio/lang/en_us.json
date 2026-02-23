@@ -19,5 +19,7 @@
   "error.notenoughenergy": "Not enough energy to do this!",
   "text.autoconfig.meyuugaosradio_client.title": "MeYuugaos Radio settings",
   "text.autoconfig.meyuugaosradio_client.option.volume": "Volume",
+  "text.autoconfig.meyuugaosradio_client.option.audioBufferSize": "Audio Buffer size",
+  "text.autoconfig.meyuugaosradio_client.option.audioBufferSize.@Tooltip": "Buffer size (in packets, ~23 ms/packet). Smaller = faster response, larger = more stable.",
   "gamerule.meyuugaosradioConnectRadius": "Maximum radio connection radius"
 }
