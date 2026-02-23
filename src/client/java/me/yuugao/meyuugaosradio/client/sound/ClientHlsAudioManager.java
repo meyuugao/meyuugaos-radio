@@ -88,7 +88,34 @@ public class ClientHlsAudioManager {
         }).start();
     }
 
+    public static void cleanup() {
+        stopAudioInstances();
+        startingStreams.clear();
+    }
+
+    public static void stopAudioInstances() {
+        audioInstances.values().forEach(ClientAudioInstance::stopStream);
+    }
+
+    public static void onConfigChanged() {
+        int newBufferSize = ClientModConfigManager.getConfig().audioBufferSize;
+        audioInstances.forEach((streamUrl, instance) -> {
+            if (instance.isPlaying()) {
+                instance.stopStream();
+                ClientAudioInstance newInstance = new ClientAudioInstance(
+                        streamUrl, instance.sampleRate, instance.channels, newBufferSize);
+                audioInstances.put(streamUrl, newInstance);
+                newInstance.startStream();
+            }
+        });
+    }
+
     public static class ClientAudioInstance {
+        private static final int AUDIO_LINE_BUFFER = 4096;
+        private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 8;
+        private static final int READ_BUFFER_SIZE = 16384;
+        private static final int BYTES_PER_SAMPLE = 2;
+        private static final int RECONNECT_DELAY_SECONDS = 1;
         private final String streamUrl;
         private final int sampleRate;
         private final int channels;
@@ -98,18 +125,11 @@ public class ClientHlsAudioManager {
         private final AtomicBoolean isStarting;
         private final BlockingQueue<byte[]> audioQueue;
         private ScheduledExecutorService scheduler;
-
         private Process ffmpegProcess;
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
         private float currentVolume;
         private volatile boolean stopRequested;
-
-        private static final int AUDIO_LINE_BUFFER = 4096;
-        private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 8;
-        private static final int READ_BUFFER_SIZE = 16384;
-        private static final int BYTES_PER_SAMPLE = 2;
-        private static final int RECONNECT_DELAY_SECONDS = 1;
 
         public ClientAudioInstance(String streamUrl, int sampleRate, int channels, int maxBufferSize) {
             this.streamUrl = streamUrl;
@@ -287,27 +307,5 @@ public class ClientHlsAudioManager {
         public boolean isPlaying() {
             return isPlaying.get();
         }
-    }
-
-    public static void cleanup() {
-        stopAudioInstances();
-        startingStreams.clear();
-    }
-
-    public static void stopAudioInstances() {
-        audioInstances.values().forEach(ClientAudioInstance::stopStream);
-    }
-
-    public static void onConfigChanged() {
-        int newBufferSize = ClientModConfigManager.getConfig().audioBufferSize;
-        audioInstances.forEach((streamUrl, instance) -> {
-            if (instance.isPlaying()) {
-                instance.stopStream();
-                ClientAudioInstance newInstance = new ClientAudioInstance(
-                        streamUrl, instance.sampleRate, instance.channels, newBufferSize);
-                audioInstances.put(streamUrl, newInstance);
-                newInstance.startStream();
-            }
-        });
     }
 }
