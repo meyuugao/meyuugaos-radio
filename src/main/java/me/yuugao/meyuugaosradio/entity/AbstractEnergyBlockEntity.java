@@ -13,9 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import team.reborn.energy.api.EnergyStorage;
 
 public abstract class AbstractEnergyBlockEntity extends BlockEntity implements EnergyStorage {
-    protected long energy;
     protected final long capacity;
     protected final long usage;
+    protected long energy;
     protected float volume;
 
     public AbstractEnergyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, long capacity, long usage) {
