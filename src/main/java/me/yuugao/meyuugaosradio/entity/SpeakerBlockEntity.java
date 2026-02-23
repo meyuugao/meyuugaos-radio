@@ -93,4 +93,9 @@ public class SpeakerBlockEntity extends AbstractEnergyBlockEntity {
     public BlockPos getRadioPos() {
         return radioPos;
     }
+
+    public void setRadioPos(BlockPos radioPos) {
+        this.radioPos = radioPos;
+        markDirty();
+    }
 }
