@@ -16,9 +16,6 @@ public class ServerHlsAudioManager {
     private static final Map<String, ServerAudioInstance> audioInstances = new ConcurrentHashMap<>();
     private static final Map<UUID, WorldPlayerInfo> allPlayers = new ConcurrentHashMap<>();
 
-    private record WorldPlayerInfo(ServerPlayerEntity player, Object worldRegistryKey) {
-    }
-
     public static void onEndServerTick(List<ServerPlayerEntity> worldPlayers) {
         updatePlayersList(worldPlayers);
 
@@ -41,6 +38,94 @@ public class ServerHlsAudioManager {
     private static void updatePlayersList(List<ServerPlayerEntity> currentWorldPlayers) {
         currentWorldPlayers.forEach(player ->
                 allPlayers.put(player.getUuid(), new WorldPlayerInfo(player, player.getWorld().getRegistryKey())));
+    }
+
+    public static void createAudioInstance(String streamUrl, Object worldRegistryKey) {
+        String instanceKey = streamUrl + "_" + worldRegistryKey;
+        if (!audioInstances.containsKey(instanceKey)) {
+            audioInstances.put(instanceKey, new ServerAudioInstance(streamUrl, worldRegistryKey));
+        }
+    }
+
+    public static void removeAudioInstance(String streamUrl, Object worldRegistryKey) {
+        String instanceKey = streamUrl + "_" + worldRegistryKey;
+        ServerAudioInstance audioInstance = audioInstances.remove(instanceKey);
+        if (audioInstance != null && audioInstance.hasSources()) {
+            sendToWorldPlayers(player ->
+                    ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), worldRegistryKey);
+        }
+    }
+
+    private static void sendToWorldPlayers(java.util.function.Consumer<ServerPlayerEntity> action, Object worldKey) {
+        allPlayers.values().forEach(worldPlayerInfo -> {
+            if (worldPlayerInfo.player != null && !worldPlayerInfo.player.isDisconnected() && worldPlayerInfo.worldRegistryKey.equals(worldKey)) {
+                action.accept(worldPlayerInfo.player);
+            }
+        });
+    }
+
+    public static ServerAudioInstance getAudioInstance(String streamUrl, Object worldRegistryKey) {
+        String instanceKey = streamUrl + "_" + worldRegistryKey;
+        return audioInstances.get(instanceKey);
+    }
+
+    public static void addSoundSource(String streamUrl, BlockPos pos, Vec3d direction, float volume, float maxRange, Object worldRegistryKey) {
+        createAudioInstance(streamUrl, worldRegistryKey);
+
+        ServerAudioInstance instance = getAudioInstance(streamUrl, worldRegistryKey);
+        if (instance != null) {
+            instance.addSoundSource(pos, direction, volume, maxRange, worldRegistryKey);
+        }
+    }
+
+    public static void removeSoundSource(String streamUrl, BlockPos pos, Object worldRegistryKey) {
+        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
+        if (audioInstance != null) {
+            audioInstance.removeSoundSource(pos);
+            if (!audioInstance.hasSources()) {
+                removeAudioInstance(streamUrl, worldRegistryKey);
+            }
+        }
+    }
+
+    public static void updateSoundSourceDirection(String streamUrl, BlockPos pos, Vec3d newDirection, Object worldRegistryKey) {
+        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
+        if (audioInstance != null) {
+            audioInstance.updateSoundSourceDirection(pos, newDirection);
+        }
+    }
+
+    public static void updateSoundSourceVolume(String streamUrl, BlockPos pos, float volume, Object worldRegistryKey) {
+        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
+        if (audioInstance != null) {
+            audioInstance.updateSoundSourceVolume(pos, volume);
+        }
+    }
+
+    public static void stopAllAudioInstances() {
+        audioInstances.values().forEach(serverAudioInstance ->
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStopPacket(player, serverAudioInstance.streamUrl), serverAudioInstance.worldRegistryKey));
+
+        audioInstances.clear();
+    }
+
+    public static void cleanupWorld(Object worldRegistryKey) {
+        Iterator<Map.Entry<String, ServerAudioInstance>> iterator = audioInstances.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, ServerAudioInstance> entry = iterator.next();
+            if (entry.getValue().worldRegistryKey.equals(worldRegistryKey)) {
+                sendToWorldPlayers(player ->
+                        ServerNetworkManager.sendServerStreamStopPacket(player, entry.getValue().streamUrl), worldRegistryKey);
+                iterator.remove();
+            }
+        }
+
+        allPlayers.entrySet().removeIf(entry ->
+                entry.getValue().worldRegistryKey.equals(worldRegistryKey));
+    }
+
+    private record WorldPlayerInfo(ServerPlayerEntity player, Object worldRegistryKey) {
     }
 
     public static class ServerSoundSource {
@@ -209,90 +294,5 @@ public class ServerHlsAudioManager {
         public boolean hasSources() {
             return !soundSources.isEmpty();
         }
-    }
-
-    public static void createAudioInstance(String streamUrl, Object worldRegistryKey) {
-        String instanceKey = streamUrl + "_" + worldRegistryKey;
-        if (!audioInstances.containsKey(instanceKey)) {
-            audioInstances.put(instanceKey, new ServerAudioInstance(streamUrl, worldRegistryKey));
-        }
-    }
-
-    public static void removeAudioInstance(String streamUrl, Object worldRegistryKey) {
-        String instanceKey = streamUrl + "_" + worldRegistryKey;
-        ServerAudioInstance audioInstance = audioInstances.remove(instanceKey);
-        if (audioInstance != null && audioInstance.hasSources()) {
-            sendToWorldPlayers(player ->
-                    ServerNetworkManager.sendServerStreamStopPacket(player, streamUrl), worldRegistryKey);
-        }
-    }
-
-    private static void sendToWorldPlayers(java.util.function.Consumer<ServerPlayerEntity> action, Object worldKey) {
-        allPlayers.values().forEach(worldPlayerInfo -> {
-            if (worldPlayerInfo.player != null && !worldPlayerInfo.player.isDisconnected() && worldPlayerInfo.worldRegistryKey.equals(worldKey)) {
-                action.accept(worldPlayerInfo.player);
-            }
-        });
-    }
-
-    public static ServerAudioInstance getAudioInstance(String streamUrl, Object worldRegistryKey) {
-        String instanceKey = streamUrl + "_" + worldRegistryKey;
-        return audioInstances.get(instanceKey);
-    }
-
-    public static void addSoundSource(String streamUrl, BlockPos pos, Vec3d direction, float volume, float maxRange, Object worldRegistryKey) {
-        createAudioInstance(streamUrl, worldRegistryKey);
-
-        ServerAudioInstance instance = getAudioInstance(streamUrl, worldRegistryKey);
-        if (instance != null) {
-            instance.addSoundSource(pos, direction, volume, maxRange, worldRegistryKey);
-        }
-    }
-
-    public static void removeSoundSource(String streamUrl, BlockPos pos, Object worldRegistryKey) {
-        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
-        if (audioInstance != null) {
-            audioInstance.removeSoundSource(pos);
-            if (!audioInstance.hasSources()) {
-                removeAudioInstance(streamUrl, worldRegistryKey);
-            }
-        }
-    }
-
-    public static void updateSoundSourceDirection(String streamUrl, BlockPos pos, Vec3d newDirection, Object worldRegistryKey) {
-        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
-        if (audioInstance != null) {
-            audioInstance.updateSoundSourceDirection(pos, newDirection);
-        }
-    }
-
-    public static void updateSoundSourceVolume(String streamUrl, BlockPos pos, float volume, Object worldRegistryKey) {
-        ServerAudioInstance audioInstance = getAudioInstance(streamUrl, worldRegistryKey);
-        if (audioInstance != null) {
-            audioInstance.updateSoundSourceVolume(pos, volume);
-        }
-    }
-
-    public static void stopAllAudioInstances() {
-        audioInstances.values().forEach(serverAudioInstance ->
-                sendToWorldPlayers(player ->
-                        ServerNetworkManager.sendServerStreamStopPacket(player, serverAudioInstance.streamUrl), serverAudioInstance.worldRegistryKey));
-
-        audioInstances.clear();
-    }
-
-    public static void cleanupWorld(Object worldRegistryKey) {
-        Iterator<Map.Entry<String, ServerAudioInstance>> iterator = audioInstances.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, ServerAudioInstance> entry = iterator.next();
-            if (entry.getValue().worldRegistryKey.equals(worldRegistryKey)) {
-                sendToWorldPlayers(player ->
-                        ServerNetworkManager.sendServerStreamStopPacket(player, entry.getValue().streamUrl), worldRegistryKey);
-                iterator.remove();
-            }
-        }
-
-        allPlayers.entrySet().removeIf(entry ->
-                entry.getValue().worldRegistryKey.equals(worldRegistryKey));
     }
 }

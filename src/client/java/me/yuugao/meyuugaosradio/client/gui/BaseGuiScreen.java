@@ -94,7 +94,7 @@ public abstract class BaseGuiScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (volumeSliderDragging) {
+        if (volumeSliderDragging && button == 0) {
             int trackTop = y + getVolumeSliderTrackY() + 1;
             int trackBottom = y + getVolumeSliderTrackY() + 1 + VOLUME_SLIDER_TRACK_HEIGHT - VOLUME_SLIDER_THUMB_HEIGHT - 2;
 
@@ -134,12 +134,16 @@ public abstract class BaseGuiScreen extends Screen {
                 }
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
-                if (volumeCursorPosition > 0) {
+                if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    volumeCursorPosition = 0;
+                } else if (volumeCursorPosition > 0) {
                     volumeCursorPosition--;
                 }
                 return true;
             } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-                if (volumeCursorPosition < volumeText.length()) {
+                if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
+                    volumeCursorPosition = volumeText.length();
+                } else if (volumeCursorPosition < volumeText.length()) {
                     volumeCursorPosition++;
                 }
                 return true;
@@ -158,7 +162,7 @@ public abstract class BaseGuiScreen extends Screen {
     @Override
     public boolean charTyped(char chr, int modifiers) {
         if (volumeTextFieldFocused) {
-            if ((modifiers & GLFW.GLFW_MOD_CONTROL) == 0 && Character.isDigit(chr)) {
+            if ((modifiers & GLFW.GLFW_MOD_CONTROL) == 0 && String.valueOf(chr).matches("-?\\d+")) {
                 String volumeText = String.valueOf((int) (volume * 100));
                 String newText;
 
