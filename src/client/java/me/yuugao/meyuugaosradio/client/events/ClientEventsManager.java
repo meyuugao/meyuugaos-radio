@@ -17,7 +17,7 @@ public class ClientEventsManager {
         lastWorld = null;
         isPaused = false;
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(worldRenderContext -> {
+        WorldRenderEvents.END.register(worldRenderContext -> {
             MatrixStack matrixStack = worldRenderContext.matrixStack();
             if (matrixStack == null) return;
 
