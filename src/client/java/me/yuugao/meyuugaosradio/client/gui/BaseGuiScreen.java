@@ -2,6 +2,7 @@ package me.yuugao.meyuugaosradio.client.gui;
 
 import static me.yuugao.meyuugaosradio.client.gui.ModTextures.*;
 
+
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
 
@@ -159,7 +160,7 @@ public abstract class BaseGuiScreen extends Screen {
     @Override
     public boolean charTyped(CharInput input) {
         if (volumeTextFieldFocused) {
-            if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) == 0) {
+            if ((input.modifiers() & GLFW.GLFW_MOD_CONTROL) == 0 && input.asString().matches("-?\\d+")) {
                 String volumeText = String.valueOf((int) (volume * 100));
                 String newText;
 
@@ -251,11 +252,8 @@ public abstract class BaseGuiScreen extends Screen {
         if (text.isEmpty()) {
             volume = 0.0f;
         } else {
-            try {
-                int value = Integer.parseInt(text);
-                volume = Math.max(0, Math.min(100, value)) / 100.0f;
-            } catch (Exception ignored) {
-            }
+            int value = Integer.parseInt(text);
+            volume = Math.max(0, Math.min(100, value)) / 100.0f;
         }
 
         if (volume == 0.0f) {
