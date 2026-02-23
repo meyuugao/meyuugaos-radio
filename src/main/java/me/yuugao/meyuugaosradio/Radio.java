@@ -35,17 +35,13 @@ import java.util.function.Function;
 import team.reborn.energy.api.EnergyStorage;
 
 public class Radio implements ModInitializer {
-    private Block RADIO_BLOCK;
-    private Block SPEAKER_BLOCK;
-
-    private RemoteControllerItem REMOTE_CONTROLLER_ITEM;
-
     public static BlockEntityType<RadioBlockEntity> RADIO_BLOCK_ENTITY;
     public static BlockEntityType<SpeakerBlockEntity> SPEAKER_BLOCK_ENTITY;
-
     public static GameRules.Key<GameRules.IntRule> RADIO_CONNECT_RADIUS;
-
     public static SoundEvent BLOCK_DISMANTLE;
+    private Block RADIO_BLOCK;
+    private Block SPEAKER_BLOCK;
+    private RemoteControllerItem REMOTE_CONTROLLER_ITEM;
 
     @Override
     public void onInitialize() {
