@@ -29,8 +29,7 @@ public class BlockGlowRenderer {
         RenderSystem.disableDepthTest();
 
         vertexBuffer.bind();
-        vertexBuffer.setShader(matrices.peek().getPositionMatrix(), projectionMatrix, RenderSystem.getShader());
-        vertexBuffer.drawElements();
+        vertexBuffer.innerSetShader(matrices.peek().getPositionMatrix(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
 
         RenderSystem.depthMask(true);
