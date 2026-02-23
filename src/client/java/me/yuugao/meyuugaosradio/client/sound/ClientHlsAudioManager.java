@@ -15,15 +15,13 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 public class ClientHlsAudioManager {
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
     private static final Map<String, AtomicBoolean> startingStreams = new ConcurrentHashMap<>();
 
     private static final float VOLUME_THRESHOLD = 0.001f;
-    private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 16;
-    private static final int SILENCE_BUFFER_SIZE = 4096;
-    private static final int RECONNECT_DELAY_SECONDS = 1;
 
     public static void handleVolumeUpdate(String streamUrl, float volume) {
         float finalVolume = volume * MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER)
@@ -34,13 +32,9 @@ public class ClientHlsAudioManager {
             instance.setVolume(finalVolume);
 
             if (finalVolume > VOLUME_THRESHOLD) {
-                if (!instance.isPlaying()) {
-                    instance.startStream();
-                }
+                if (!instance.isPlaying()) instance.startStream();
             } else if (finalVolume <= VOLUME_THRESHOLD) {
-                if (instance.isPlaying()) {
-                    instance.stopStream();
-                }
+                if (instance.isPlaying()) instance.stopStream();
             }
         } else if (finalVolume > VOLUME_THRESHOLD) {
             detectAndStartStream(streamUrl);
@@ -48,44 +42,29 @@ public class ClientHlsAudioManager {
     }
 
     public static void handleStreamStart(String streamUrl) {
-        if (!audioInstances.containsKey(streamUrl)) {
-            detectAndStartStream(streamUrl);
-        }
+        if (!audioInstances.containsKey(streamUrl)) detectAndStartStream(streamUrl);
     }
 
     public static void handleStreamStop(String streamUrl) {
         startingStreams.remove(streamUrl);
-
         ClientAudioInstance instance = audioInstances.remove(streamUrl);
-        if (instance != null) {
-            instance.stopStream();
-        }
+        if (instance != null) instance.stopStream();
     }
 
     private static void detectAndStartStream(String streamUrl) {
         AtomicBoolean isStarting = startingStreams.computeIfAbsent(streamUrl, key -> new AtomicBoolean(false));
-
-        if (!isStarting.compareAndSet(false, true)) {
-            return;
-        }
+        if (!isStarting.compareAndSet(false, true)) return;
 
         new Thread(() -> {
             try {
                 String[] probeCommand = {
-                        "ffprobe",
-                        "-v", "quiet",
-                        "-print_format", "csv",
-                        "-show_entries", "stream=sample_rate,channels",
-                        "-of", "csv=p=0",
-                        streamUrl
+                        "ffprobe", "-v", "quiet", "-print_format", "csv",
+                        "-show_entries", "stream=sample_rate,channels", "-of", "csv=p=0", streamUrl
                 };
-
                 Process probeProcess = new ProcessBuilder(probeCommand).start();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(probeProcess.getInputStream()));
                 String line = reader.readLine();
-
-                int sampleRate = 0;
-                int channels = 0;
+                int sampleRate = 0, channels = 0;
 
                 if (line != null && !line.trim().isEmpty()) {
                     String[] parts = line.split(",");
@@ -94,7 +73,6 @@ public class ClientHlsAudioManager {
                         channels = Integer.parseInt(parts[1].trim());
                     }
                 }
-
                 probeProcess.waitFor();
 
                 if (startingStreams.containsKey(streamUrl) && sampleRate != 0 && channels != 0) {
@@ -125,14 +103,13 @@ public class ClientHlsAudioManager {
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
         private float currentVolume;
-
         private volatile boolean stopRequested;
 
-        private static final int AUDIO_LINE_BUFFER = 8192;
+        private static final int AUDIO_LINE_BUFFER = 4096;
+        private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 8;
         private static final int READ_BUFFER_SIZE = 16384;
         private static final int BYTES_PER_SAMPLE = 2;
-        private static final int VOLUME_POWER_FACTOR = 3;
-        private static final int DECIBEL_SCALE_FACTOR = 6;
+        private static final int RECONNECT_DELAY_SECONDS = 1;
 
         public ClientAudioInstance(String streamUrl, int sampleRate, int channels, int maxBufferSize) {
             this.streamUrl = streamUrl;
@@ -154,19 +131,13 @@ public class ClientHlsAudioManager {
         private void initializeAudioLine() throws LineUnavailableException {
             AudioFormat format = new AudioFormat(sampleRate, 16, channels, true, false);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
-
-            if (!AudioSystem.isLineSupported(info)) {
-                throw new LineUnavailableException("Audio format not supported");
-            }
-
             audioLine = (SourceDataLine) AudioSystem.getLine(info);
             audioLine.open(format, AUDIO_LINE_BUFFER * AUDIO_LINE_BUFFER_MULTIPLIER);
 
-            if (audioLine.isControlSupported(FloatControl.Type.VOLUME)) {
+            if (audioLine.isControlSupported(FloatControl.Type.VOLUME))
                 volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.VOLUME);
-            } else if (audioLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+            else if (audioLine.isControlSupported(FloatControl.Type.MASTER_GAIN))
                 volumeControl = (FloatControl) audioLine.getControl(FloatControl.Type.MASTER_GAIN);
-            }
         }
 
         private Runnable createConnectTask() {
@@ -188,44 +159,45 @@ public class ClientHlsAudioManager {
                                 if (alignedBytes > 0) {
                                     byte[] audioData = new byte[alignedBytes];
                                     System.arraycopy(buffer, 0, audioData, 0, alignedBytes);
-                                    while (!stopRequested && !audioQueue.offer(audioData)) {
+                                    while (!stopRequested && !audioQueue.offer(audioData))
                                         audioQueue.poll();
-                                    }
                                 }
                             }
                         }
-                        if (!stopRequested) {
+                        if (!stopRequested)
                             scheduler.schedule(this, RECONNECT_DELAY_SECONDS, TimeUnit.SECONDS);
-                        }
                     } catch (Exception e) {
-                        if (!stopRequested) {
+                        if (!stopRequested)
                             scheduler.schedule(this, RECONNECT_DELAY_SECONDS, TimeUnit.SECONDS);
-                        }
                     } finally {
-                        if (currentProcess != null && currentProcess.isAlive()) {
-                            currentProcess.destroy();
-                        }
+                        if (currentProcess != null && currentProcess.isAlive()) currentProcess.destroy();
                     }
                 }
             };
         }
 
         private Thread createPlaybackThread() {
+            final long bytesPerSecond = (long) sampleRate * channels * 2;
+
             return new Thread(() -> {
                 try {
                     initializeAudioLine();
                     updateAudioVolume();
                     audioLine.start();
-                    byte[] silence = new byte[SILENCE_BUFFER_SIZE];
+
+                    long nextWriteTime = System.nanoTime();
+
                     while (!stopRequested || !audioQueue.isEmpty()) {
-                        byte[] audioData = audioQueue.poll();
-                        if (audioData != null) {
+                        byte[] audioData = audioQueue.poll(50, TimeUnit.MILLISECONDS);
+                        if (audioData != null && audioData.length > 0) {
+                            long currentTime = System.nanoTime();
+                            if (currentTime < nextWriteTime) {
+                                LockSupport.parkNanos(nextWriteTime - currentTime);
+                            }
                             audioLine.write(audioData, 0, audioData.length);
-                        } else if (!stopRequested) {
-                            audioLine.write(silence, 0, silence.length);
-                        } else {
-                            break;
-                        }
+                            long nanosToAdd = (audioData.length * 1000000000L) / bytesPerSecond;
+                            nextWriteTime += nanosToAdd;
+                        } else if (stopRequested) break;
                     }
                     audioLine.drain();
                 } catch (Exception e) {
@@ -238,28 +210,21 @@ public class ClientHlsAudioManager {
         }
 
         public void startStream() {
-            if (!isStarting.compareAndSet(false, true) || isPlaying.get()) {
-                return;
-            }
-
+            if (!isStarting.compareAndSet(false, true) || isPlaying.get()) return;
             try {
                 stopRequested = false;
                 audioQueue.clear();
-
                 scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
                     Thread t = new Thread(r, "FFmpeg-Reader-" + streamUrl.hashCode());
                     t.setPriority(Thread.MAX_PRIORITY);
                     t.setDaemon(true);
                     return t;
                 });
-
                 Thread playbackThread = createPlaybackThread();
                 playbackThread.setPriority(Thread.NORM_PRIORITY);
                 playbackThread.setDaemon(true);
                 playbackThread.start();
-
                 scheduler.execute(createConnectTask());
-
                 isPlaying.set(true);
             } finally {
                 isStarting.set(false);
@@ -268,30 +233,16 @@ public class ClientHlsAudioManager {
 
         private @NotNull ProcessBuilder getProcessBuilder() {
             String[] ffmpegCommand = {
-                    "ffmpeg",
-                    "-v", "warning",
-                    "-i", streamUrl,
-                    "-vn",
+                    "ffmpeg", "-v", "warning", "-i", streamUrl, "-vn",
                     "-af", "acompressor=threshold=-20dB:ratio=4:attack=20:release=200,volume=5.0",
-                    "-c:a", "pcm_s16le",
-                    "-f", "s16le",
-                    "-ar", String.valueOf(sampleRate),
-                    "-ac", String.valueOf(channels),
-                    "-reconnect", "1",
-                    "-reconnect_streamed", "1",
-                    "-reconnect_delay_max", "2",
-                    "-reconnect_on_network_error", "1",
-                    "-reconnect_on_http_error", "1",
-                    "-timeout", "5000000",
-                    "-buffer_size", "8192000",
-                    "-max_delay", "3000000",
-                    "-probesize", "20000000",
-                    "-analyzeduration", "20000000",
-                    "-threads", "1",
-                    "-nostats",
-                    "pipe:1"
+                    "-c:a", "pcm_s16le", "-f", "s16le",
+                    "-ar", String.valueOf(sampleRate), "-ac", String.valueOf(channels),
+                    "-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "2",
+                    "-reconnect_on_network_error", "1", "-reconnect_on_http_error", "1",
+                    "-timeout", "5000000", "-buffer_size", "8192000", "-max_delay", "3000000",
+                    "-probesize", "20000000", "-analyzeduration", "20000000",
+                    "-threads", "1", "-nostats", "pipe:1"
             };
-
             ProcessBuilder pb = new ProcessBuilder(ffmpegCommand);
             pb.redirectErrorStream(false);
             return pb;
@@ -299,27 +250,15 @@ public class ClientHlsAudioManager {
 
         public void stopStream() {
             stopRequested = true;
-
-            if (!isPlaying.getAndSet(false)) {
-                return;
-            }
-
-            if (ffmpegProcess != null) {
-                ffmpegProcess.destroy();
-            }
-
-            if (scheduler != null) {
-                scheduler.shutdown();
-            }
-
+            if (!isPlaying.getAndSet(false)) return;
+            if (ffmpegProcess != null) ffmpegProcess.destroy();
+            if (scheduler != null) scheduler.shutdown();
             audioQueue.clear();
-
             if (audioLine != null && audioLine.isOpen()) {
                 audioLine.stop();
                 audioLine.flush();
                 audioLine.close();
             }
-
             volumeControl = null;
         }
 
@@ -330,20 +269,15 @@ public class ClientHlsAudioManager {
 
         private void updateAudioVolume() {
             if (volumeControl == null) return;
-
             if (currentVolume > VOLUME_THRESHOLD) {
-                float effectiveVolume = (float) Math.pow(currentVolume, 1.0f / VOLUME_POWER_FACTOR);
+                float effectiveVolume = (float) Math.pow(currentVolume, 1.0f / 3);
                 effectiveVolume = Math.min(effectiveVolume, 1.0f);
-
                 if (volumeControl.getType() == FloatControl.Type.VOLUME) {
-                    float min = volumeControl.getMinimum();
-                    float max = volumeControl.getMaximum();
+                    float min = volumeControl.getMinimum(), max = volumeControl.getMaximum();
                     volumeControl.setValue(min + (max - min) * effectiveVolume);
                 } else if (volumeControl.getType() == FloatControl.Type.MASTER_GAIN) {
-                    float minDB = volumeControl.getMinimum();
-                    float maxDB = volumeControl.getMaximum();
-                    float gainDB = minDB * (1.0f - effectiveVolume);
-                    volumeControl.setValue(Math.max(minDB, Math.min(maxDB, gainDB)));
+                    float minDB = volumeControl.getMinimum(), maxDB = volumeControl.getMaximum();
+                    volumeControl.setValue(minDB + (maxDB - minDB) * effectiveVolume);
                 }
             } else {
                 volumeControl.setValue(volumeControl.getMinimum());
@@ -366,17 +300,11 @@ public class ClientHlsAudioManager {
 
     public static void onConfigChanged() {
         int newBufferSize = ClientModConfigManager.getConfig().audioBufferSize;
-
         audioInstances.forEach((streamUrl, instance) -> {
-            if (instance.getMaxBufferSize() != newBufferSize && instance.isPlaying()) {
+            if (instance.isPlaying()) {
                 instance.stopStream();
-
                 ClientAudioInstance newInstance = new ClientAudioInstance(
-                        streamUrl,
-                        instance.sampleRate,
-                        instance.channels,
-                        newBufferSize
-                );
+                        streamUrl, instance.sampleRate, instance.channels, newBufferSize);
                 audioInstances.put(streamUrl, newInstance);
                 newInstance.startStream();
             }
