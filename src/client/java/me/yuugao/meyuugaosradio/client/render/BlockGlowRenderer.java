@@ -22,9 +22,6 @@ public class BlockGlowRenderer {
     private static VertexBuffer vertexBuffer;
     private static boolean enabled = false;
 
-    public record GlowInfo(float r, float g, float b, float a) {
-    }
-
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
         if (!enabled || vertexBuffer == null) return;
 
@@ -135,5 +132,8 @@ public class BlockGlowRenderer {
 
     public static void setEnabled(boolean state) {
         enabled = state;
+    }
+
+    public record GlowInfo(float r, float g, float b, float a) {
     }
 }

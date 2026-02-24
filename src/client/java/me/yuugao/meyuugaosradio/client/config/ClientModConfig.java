@@ -3,7 +3,6 @@ package me.yuugao.meyuugaosradio.client.config;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
-import me.shedaniel.autoconfig.ConfigData.ValidationException;
 
 @Config(name = "meyuugaosradio_client")
 public class ClientModConfig implements ConfigData {
