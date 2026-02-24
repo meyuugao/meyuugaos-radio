@@ -29,11 +29,6 @@ import java.util.List;
 public class RemoteControllerItem extends Item {
     private final EnergyItemHandler energyItemHandler;
 
-    @FunctionalInterface
-    private interface BlockInteractionHandler {
-        void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
-    }
-
     public RemoteControllerItem(Settings settings) {
         super(settings);
 
@@ -126,5 +121,10 @@ public class RemoteControllerItem extends Item {
 
     public EnergyItemHandler getEnergyItemHandler() {
         return energyItemHandler;
+    }
+
+    @FunctionalInterface
+    private interface BlockInteractionHandler {
+        void handle(AbstractEnergyBlock block, World world, BlockPos pos, ServerPlayerEntity player);
     }
 }

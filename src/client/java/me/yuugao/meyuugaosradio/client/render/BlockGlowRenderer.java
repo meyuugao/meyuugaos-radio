@@ -1,7 +1,10 @@
 package me.yuugao.meyuugaosradio.client.render;
 
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -16,9 +19,6 @@ public class BlockGlowRenderer {
     private static final Map<BlockPos, GlowInfo> blocksToRender = new HashMap<>();
     private static VertexBuffer vertexBuffer;
     private static boolean enabled = false;
-
-    public record GlowInfo(float r, float g, float b, float a) {
-    }
 
     public static void render(MatrixStack matrices, Matrix4f projectionMatrix) {
         if (!enabled || vertexBuffer == null) return;
@@ -130,5 +130,8 @@ public class BlockGlowRenderer {
 
     public static void setEnabled(boolean state) {
         enabled = state;
+    }
+
+    public record GlowInfo(float r, float g, float b, float a) {
     }
 }
