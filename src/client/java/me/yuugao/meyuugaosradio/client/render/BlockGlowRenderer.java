@@ -31,9 +31,6 @@ public class BlockGlowRenderer {
     private static final Map<BlockPos, GlowInfo> blocksToRender = new HashMap<>();
     private static boolean enabled = false;
 
-    public record GlowInfo(float r, float g, float b, float a) {
-    }
-
     public static void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider) {
         if (!enabled || blocksToRender.isEmpty()) return;
 
@@ -105,5 +102,8 @@ public class BlockGlowRenderer {
 
     public static void setEnabled(boolean state) {
         enabled = state;
+    }
+
+    public record GlowInfo(float r, float g, float b, float a) {
     }
 }
