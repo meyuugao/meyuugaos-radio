@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.JsonHelper;
@@ -19,8 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 

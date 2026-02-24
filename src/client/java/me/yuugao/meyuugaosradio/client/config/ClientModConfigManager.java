@@ -1,9 +1,9 @@
 package me.yuugao.meyuugaosradio.client.config;
 
+import me.yuugao.meyuugaosradio.client.sound.ClientHlsAudioManager;
+
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-
-import me.yuugao.meyuugaosradio.client.sound.ClientHlsAudioManager;
 
 public class ClientModConfigManager {
     private static ClientModConfig config;
