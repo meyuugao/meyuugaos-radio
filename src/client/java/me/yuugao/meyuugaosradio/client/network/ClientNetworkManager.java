@@ -11,13 +11,14 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Collection;
 import java.util.List;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 
 public class ClientNetworkManager {
@@ -55,7 +56,10 @@ public class ClientNetworkManager {
         ClientPlayNetworking.registerGlobalReceiver(NetworkConstants.ServerPlayerSendMessagePayload.ID, (payload, context) ->
                 context.client().execute(() -> {
                     if (MinecraftClient.getInstance().player != null) {
-                        Text text = new Gson().fromJson(payload.textJson(), TypeToken.get(JsonOps.class).getType());
+                        Text text = TextCodecs.CODEC.decode(JsonOps.INSTANCE, JsonHelper.deserialize(payload.textJson()))
+                                .result()
+                                .map(Pair::getFirst)
+                                .orElse(Text.empty());
                         MinecraftClient.getInstance().player.sendMessage(text, payload.overlay());
                     }
                 }));

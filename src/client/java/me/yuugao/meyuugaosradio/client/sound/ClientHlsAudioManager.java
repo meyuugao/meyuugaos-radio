@@ -1,10 +1,12 @@
 package me.yuugao.meyuugaosradio.client.sound;
 
 import me.yuugao.meyuugaosradio.client.config.ClientModConfigManager;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
+
 import org.jetbrains.annotations.NotNull;
-import javax.sound.sampled.*;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
+
+import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
@@ -84,7 +88,34 @@ public class ClientHlsAudioManager {
         }).start();
     }
 
+    public static void cleanup() {
+        stopAudioInstances();
+        startingStreams.clear();
+    }
+
+    public static void stopAudioInstances() {
+        audioInstances.values().forEach(ClientAudioInstance::stopStream);
+    }
+
+    public static void onConfigChanged() {
+        int newBufferSize = ClientModConfigManager.getConfig().audioBufferSize;
+        audioInstances.forEach((streamUrl, instance) -> {
+            if (instance.isPlaying()) {
+                instance.stopStream();
+                ClientAudioInstance newInstance = new ClientAudioInstance(
+                        streamUrl, instance.sampleRate, instance.channels, newBufferSize);
+                audioInstances.put(streamUrl, newInstance);
+                newInstance.startStream();
+            }
+        });
+    }
+
     public static class ClientAudioInstance {
+        private static final int AUDIO_LINE_BUFFER = 4096;
+        private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 8;
+        private static final int READ_BUFFER_SIZE = 16384;
+        private static final int BYTES_PER_SAMPLE = 2;
+        private static final int RECONNECT_DELAY_SECONDS = 1;
         private final String streamUrl;
         private final int sampleRate;
         private final int channels;
@@ -94,18 +125,11 @@ public class ClientHlsAudioManager {
         private final AtomicBoolean isStarting;
         private final BlockingQueue<byte[]> audioQueue;
         private ScheduledExecutorService scheduler;
-
         private Process ffmpegProcess;
         private SourceDataLine audioLine;
         private FloatControl volumeControl;
         private float currentVolume;
         private volatile boolean stopRequested;
-
-        private static final int AUDIO_LINE_BUFFER = 4096;
-        private static final int AUDIO_LINE_BUFFER_MULTIPLIER = 8;
-        private static final int READ_BUFFER_SIZE = 16384;
-        private static final int BYTES_PER_SAMPLE = 2;
-        private static final int RECONNECT_DELAY_SECONDS = 1;
 
         public ClientAudioInstance(String streamUrl, int sampleRate, int channels, int maxBufferSize) {
             this.streamUrl = streamUrl;
@@ -120,7 +144,9 @@ public class ClientHlsAudioManager {
             this.currentVolume = 0.0f;
         }
 
-        public int getMaxBufferSize() { return maxBufferSize; }
+        public int getMaxBufferSize() {
+            return maxBufferSize;
+        }
 
         private void initializeAudioLine() throws LineUnavailableException {
             AudioFormat format = new AudioFormat(sampleRate, 16, channels, true, false);
@@ -278,28 +304,8 @@ public class ClientHlsAudioManager {
             }
         }
 
-        public boolean isPlaying() { return isPlaying.get(); }
-    }
-
-    public static void cleanup() {
-        stopAudioInstances();
-        startingStreams.clear();
-    }
-
-    public static void stopAudioInstances() {
-        audioInstances.values().forEach(ClientAudioInstance::stopStream);
-    }
-
-    public static void onConfigChanged() {
-        int newBufferSize = ClientModConfigManager.getConfig().audioBufferSize;
-        audioInstances.forEach((streamUrl, instance) -> {
-            if (instance.isPlaying()) {
-                instance.stopStream();
-                ClientAudioInstance newInstance = new ClientAudioInstance(
-                        streamUrl, instance.sampleRate, instance.channels, newBufferSize);
-                audioInstances.put(streamUrl, newInstance);
-                newInstance.startStream();
-            }
-        });
+        public boolean isPlaying() {
+            return isPlaying.get();
+        }
     }
 }

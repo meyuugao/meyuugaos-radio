@@ -5,8 +5,11 @@ import static me.yuugao.meyuugaosradio.Constants.SERVER_LOGGER;
 
 import me.yuugao.meyuugaosradio.block.AbstractEnergyBlock;
 import me.yuugao.meyuugaosradio.block.EnergyStateEnum;
+import me.yuugao.meyuugaosradio.block.RadioBlock;
+import me.yuugao.meyuugaosradio.block.SpeakerBlock;
 import me.yuugao.meyuugaosradio.entity.AbstractEnergyBlockEntity;
 import me.yuugao.meyuugaosradio.entity.RadioBlockEntity;
+import me.yuugao.meyuugaosradio.entity.SpeakerBlockEntity;
 import me.yuugao.meyuugaosradio.sound.ServerHlsAudioManager;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
@@ -42,30 +45,31 @@ public class ServerEventsManager {
                     if (state.get(AbstractEnergyBlock.ENERGY_STATE).equals(EnergyStateEnum.ENABLED)) {
                         long currentEnergy = abstractEnergyBlockEntity.getAmount();
                         float currentVolume = abstractEnergyBlockEntity.getVolume();
-                        String currentStreamUrl = null;
-                        List<BlockPos> currentSpeakers = null;
+                        BlockPos pos = abstractEnergyBlockEntity.getPos();
 
                         if (abstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
-                            currentStreamUrl = radioBlockEntity.getStreamUrl();
-                            currentSpeakers = radioBlockEntity.getSpeakers();
-                        }
+                            String currentStreamUrl = radioBlockEntity.getStreamUrl();
+                            List<BlockPos> currentSpeakers = radioBlockEntity.getSpeakers();
 
-                        BlockPos pos = abstractEnergyBlockEntity.getPos();
-                        serverWorld.removeBlockEntity(pos);
-                        ((AbstractEnergyBlock) state.getBlock()).onDisabled(serverWorld, pos, state);
+                            serverWorld.removeBlockEntity(pos);
+                            ((RadioBlock) state.getBlock()).onDisabled(serverWorld, pos, state);
 
-                        if (serverWorld.getBlockEntity(pos) instanceof AbstractEnergyBlockEntity newAbstractEnergyBlockEntity) {
-                            newAbstractEnergyBlockEntity.setEnergy(currentEnergy);
-                            newAbstractEnergyBlockEntity.setVolume(currentVolume);
+                            if (serverWorld.getBlockEntity(pos) instanceof RadioBlockEntity newRadioBlockEntity) {
+                                newRadioBlockEntity.setEnergy(currentEnergy);
+                                newRadioBlockEntity.setVolume(currentVolume);
+                                newRadioBlockEntity.setStreamUrl(currentStreamUrl);
+                                newRadioBlockEntity.setSpeakers(currentSpeakers);
+                            }
+                        } else if (abstractEnergyBlockEntity instanceof SpeakerBlockEntity speakerBlockEntity) {
+                            BlockPos radioPos = speakerBlockEntity.getRadioPos();
 
-                            if (newAbstractEnergyBlockEntity instanceof RadioBlockEntity radioBlockEntity) {
-                                if (currentStreamUrl != null) {
-                                    radioBlockEntity.setStreamUrl(currentStreamUrl);
-                                }
+                            serverWorld.removeBlockEntity(pos);
+                            ((SpeakerBlock) state.getBlock()).onDisabled(serverWorld, pos, state);
 
-                                if (currentSpeakers != null) {
-                                    radioBlockEntity.setSpeakers(currentSpeakers);
-                                }
+                            if (serverWorld.getBlockEntity(pos) instanceof SpeakerBlockEntity newSpeakerBlockEntity) {
+                                newSpeakerBlockEntity.setEnergy(currentEnergy);
+                                newSpeakerBlockEntity.setVolume(currentVolume);
+                                newSpeakerBlockEntity.setRadioPos(radioPos);
                             }
                         }
                     }
