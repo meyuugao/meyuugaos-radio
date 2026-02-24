@@ -1,8 +1,5 @@
 package me.yuugao.meyuugaosradio.client.events;
 
-import static me.yuugao.meyuugaosradio.Constants.CLIENT_LOGGER;
-
-
 import me.yuugao.meyuugaosradio.client.render.BlockGlowRenderer;
 import me.yuugao.meyuugaosradio.client.sound.ClientHlsAudioManager;
 
