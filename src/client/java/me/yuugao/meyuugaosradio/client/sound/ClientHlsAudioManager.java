@@ -7,8 +7,6 @@ import net.minecraft.sound.SoundCategory;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.sound.sampled.*;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
+
+import javax.sound.sampled.*;
 
 public class ClientHlsAudioManager {
     private static final Map<String, ClientAudioInstance> audioInstances = new ConcurrentHashMap<>();
